@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Control de rackeo</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #f2f2ef;
+      margin: 0;
+      padding: 0;
+      color: #222;
+    }
+    .screen { max-width: 480px; margin: 0 auto; padding: 20px 16px 80px; }
+    .hidden { display: none !important; }
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    h2 { font-size: 15px; margin: 0 0 12px; color: #333; }
+    label { display: block; font-size: 12px; color: #666; margin: 10px 0 4px; }
+    input[type=text], input[type=password], select {
+      width: 100%;
+      height: 42px;
+      font-size: 15px;
+      padding: 0 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fff;
+    }
+    button {
+      width: 100%;
+      height: 44px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #fff;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    button.primary { background: #1d6f56; color: #fff; border: none; }
+    button.danger { background: #f0d9d9; color: #7a1f1f; border: none; }
+    button.secondary { background: #eee; }
+    button.small { width: auto; height: 32px; font-size: 12px; padding: 0 12px; margin: 0; }
+    .row { display: flex; gap: 8px; }
+    .row > * { flex: 1; }
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      max-width: 480px; margin: 0 auto; padding: 14px 16px; background: #fff; border-bottom: 1px solid #ddd;
+    }
+    .topbar span { font-size: 13px; color: #555; }
+    .topbar a { font-size: 13px; color: #1d6f56; text-decoration: none; margin-left: 14px; }
+    .toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #1d6f56; color: #fff; padding: 10px 18px; border-radius: 8px;
+      font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none;
+    }
+    .toast.error { background: #a32d2d; }
+    .toast.show { opacity: 1; }
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal { background: #fff; border-radius: 12px; padding: 20px; max-width: 320px; width: 100%; }
+    .catalog-list { list-style: none; margin: 0 0 10px; padding: 0; max-height: 200px; overflow-y: auto; }
+    .catalog-list li {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 10px; background: #f7f7f5; border-radius: 6px; margin-bottom: 4px; font-size: 14px;
+    }
+    .catalog-list li button { width: auto; height: auto; border: none; background: none; color: #a32d2d; font-size: 13px; margin: 0; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+    .tabs button { margin: 0; }
+    .tabs button.active { background: #1d6f56; color: #fff; border: none; }
+    #reader { width: 100%; margin-top: 10px; border-radius: 8px; overflow: hidden; }
+    .msg { font-size: 13px; color: #a32d2d; min-height: 16px; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="view-login" class="screen">
+    <div class="card" style="margin-top:60px">
+      <h1 style="text-align:center">Control de rackeo</h1>
+      <p style="text-align:center;color:#777;font-size:13px;margin-top:0">Camaras de producto terminado</p>
+      <label>Usuario</label>
+      <input type="text" id="loginUsuario" placeholder="operador01" autocomplete="username">
+      <label>PIN</label>
+      <input type="password" id="loginPin" placeholder="••••" autocomplete="current-password">
+      <p class="msg" id="loginError"></p>
+      <button class="primary" onclick="hacerLogin()">Ingresar</button>
+    </div>
+  </div>
+
+  <!-- APP PRINCIPAL -->
+  <div id="view-app" class="screen hidden">
+    <div class="topbar">
+      <span id="usuarioActual"></span>
+      <div>
+        <a href="#" onclick="mostrarCatalogos();return false;">Catalogos</a>
+        <a href="#" onclick="cerrarSesion();return false;">Salir</a>
+      </div>
+    </div>
+
+    <div class="screen">
+      <div class="card">
+        <h2>Escanear pallet</h2>
+        <label>Codigo de pallet</label>
+        <input type="text" id="inputPallet" placeholder="Escanea o escribe el codigo" autofocus>
+        <div class="row">
+          <button class="secondary" onclick="buscarPorTeclado()">Buscar</button>
+          <button class="secondary" onclick="toggleCamara()">Usar camara</button>
+        </div>
+        <div id="reader" class="hidden"></div>
+      </div>
+
+      <div id="cardUbicacion" class="card hidden">
+        <h2 id="tituloUbicacion">Asignar ubicacion</h2>
+        <p style="font-size:13px;color:#666;margin:-6px 0 4px" id="palletActivo"></p>
+        <label>Camara</label>
+        <select id="selCamara"></select>
+        <label>Calle</label>
+        <select id="selCalle"></select>
+        <label>Nivel</label>
+        <select id="selNivel"></select>
+        <button class="primary" onclick="confirmarUbicacion()">Guardar (autoguardado)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DUPLICADO -->
+  <div id="modalDuplicado" class="modal-bg hidden">
+    <div class="modal">
+      <h2 style="margin-top:0">Pallet ya ubicado</h2>
+      <p style="font-size:13px;color:#555;line-height:1.5" id="textoDuplicado"></p>
+      <button class="primary" onclick="irACambiarPosicion()">Cambiar posicion</button>
+      <button class="danger" onclick="confirmarReporteDuplicado()">Reportar duplicado</button>
+      <button class="secondary" onclick="cerrarModalDuplicado()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- CATALOGOS -->
+  <div id="view-catalogos" class="screen hidden">
+    <div class="topbar">
+      <span>Catalogos</span>
+      <a href="#" onclick="volverAlApp();return false;">Volver</a>
+    </div>
+    <div class="screen">
+      <div class="card">
+        <div class="tabs">
+          <button id="tabCamara" class="active" onclick="cambiarTabCatalogo('camara')">Camaras</button>
+          <button id="tabCalle" onclick="cambiarTabCatalogo('calle')">Calles</button>
+          <button id="tabNivel" onclick="cambiarTabCatalogo('nivel')">Niveles</button>
+        </div>
+        <ul class="catalog-list" id="listaCatalogo"></ul>
+        <div class="row">
+          <input type="text" id="nuevoValorCatalogo" placeholder="Nuevo valor">
+          <button class="primary small" onclick="agregarValorCatalogo()">Agregar</button>
+        </div>
+        <p class="msg" id="catalogoError"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxdTjyWSgilSdYQNas0B2v2wDH6Lk_CVMiLbCPQh6-71NYAR04BV5k5JYEV2r18Nq6s/exec';
+
+  let usuarioActual = null;
+  let catalogos = { camaras: [], calles: [], niveles: [] };
+  let codigoPalletActivo = null;
+  let modoUbicacion = 'nuevo'; // 'nuevo' | 'cambio'
+  let tabCatalogoActual = 'camara';
+  let html5QrCode = null;
+
+  // ---------- API (fetch al Apps Script publicado) ----------
+  function llamarApi(action, params) {
+    params = params || {};
+    params.action = action;
+    return fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita preflight CORS
+      body: JSON.stringify(params)
+    }).then(function (r) { return r.json(); });
+  }
+
+  // ---------- LOGIN ----------
+  function hacerLogin() {
+    const usuario = document.getElementById('loginUsuario').value.trim();
+    const pin = document.getElementById('loginPin').value.trim();
+    document.getElementById('loginError').textContent = '';
+    if (!usuario || !pin) {
+      document.getElementById('loginError').textContent = 'Ingresa usuario y PIN';
+      return;
+    }
+    llamarApi('login', { usuario: usuario, pin: pin })
+      .then(function (res) {
+        if (res.ok) {
+          usuarioActual = res.usuario;
+          document.getElementById('usuarioActual').textContent = usuarioActual + ' (' + res.rol + ')';
+          document.getElementById('view-login').classList.add('hidden');
+          document.getElementById('view-app').classList.remove('hidden');
+          cargarCatalogos();
+        } else {
+          document.getElementById('loginError').textContent = res.mensaje;
+        }
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function cerrarSesion() {
+    usuarioActual = null;
+    document.getElementById('view-app').classList.add('hidden');
+    document.getElementById('view-catalogos').classList.add('hidden');
+    document.getElementById('view-login').classList.remove('hidden');
+    document.getElementById('loginPin').value = '';
+  }
+
+  // ---------- CATALOGOS (dropdowns del formulario) ----------
+  function cargarCatalogos() {
+    llamarApi('getCatalogos')
+      .then(function (res) {
+        catalogos = res;
+        llenarSelect('selCamara', res.camaras);
+        llenarSelect('selCalle', res.calles);
+        llenarSelect('selNivel', res.niveles);
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function llenarSelect(id, valores) {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '';
+    valores.forEach(function (v) {
+      const opt = document.createElement('option');
+      opt.value = v;
+      opt.textContent = v;
+      sel.appendChild(opt);
+    });
+  }
+
+  // ---------- ESCANEO DE PALLET ----------
+  function buscarPorTeclado() {
+    const codigo = document.getElementById('inputPallet').value.trim();
+    if (!codigo) return;
+    buscarPallet(codigo);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('inputPallet').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') buscarPorTeclado();
+    });
+  });
+
+  function buscarPallet(codigo) {
+    llamarApi('buscarPallet', { codigo: codigo })
+      .then(function (res) {
+        codigoPalletActivo = codigo;
+        if (res.existe) {
+          mostrarModalDuplicado(res);
+        } else {
+          modoUbicacion = 'nuevo';
+          mostrarFormularioUbicacion('Asignar ubicacion');
+        }
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function mostrarFormularioUbicacion(titulo) {
+    document.getElementById('tituloUbicacion').textContent = titulo;
+    document.getElementById('palletActivo').textContent = 'Pallet: ' + codigoPalletActivo;
+    document.getElementById('cardUbicacion').classList.remove('hidden');
+  }
+
+  function confirmarUbicacion() {
+    const camara = document.getElementById('selCamara').value;
+    const calle = document.getElementById('selCalle').value;
+    const nivel = document.getElementById('selNivel').value;
+    llamarApi('guardarUbicacion', {
+      codigo: codigoPalletActivo, camara: camara, calle: calle, nivel: nivel, usuario: usuarioActual
+    })
+      .then(function () {
+        mostrarToast('Guardado: ' + camara + ' / ' + calle + ' / ' + nivel);
+        resetPantallaEscaneo();
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function resetPantallaEscaneo() {
+    document.getElementById('inputPallet').value = '';
+    document.getElementById('cardUbicacion').classList.add('hidden');
+    codigoPalletActivo = null;
+    document.getElementById('inputPallet').focus();
+  }
+
+  // ---------- DUPLICADO ----------
+  function mostrarModalDuplicado(info) {
+    document.getElementById('textoDuplicado').textContent =
+      'El pallet ' + info.codigo + ' ya esta ubicado en ' + info.camara + ', ' + info.calle + ', ' + info.nivel +
+      '. Que deseas hacer?';
+    document.getElementById('modalDuplicado').classList.remove('hidden');
+  }
+
+  function cerrarModalDuplicado() {
+    document.getElementById('modalDuplicado').classList.add('hidden');
+    resetPantallaEscaneo();
+  }
+
+  function irACambiarPosicion() {
+    document.getElementById('modalDuplicado').classList.add('hidden');
+    modoUbicacion = 'cambio';
+    mostrarFormularioUbicacion('Cambiar posicion');
+  }
+
+  function confirmarReporteDuplicado() {
+    llamarApi('reportarDuplicado', { codigo: codigoPalletActivo, usuario: usuarioActual })
+      .then(function () {
+        mostrarToast('Duplicado reportado');
+        document.getElementById('modalDuplicado').classList.add('hidden');
+        resetPantallaEscaneo();
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  // ---------- CAMARA (escaneo con celular) ----------
+  function toggleCamara() {
+    const reader = document.getElementById('reader');
+    if (reader.classList.contains('hidden')) {
+      reader.classList.remove('hidden');
+      html5QrCode = new Html5Qrcode('reader');
+      html5QrCode.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: 220 },
+        function (decodedText) {
+          document.getElementById('inputPallet').value = decodedText;
+          detenerCamara();
+          buscarPallet(decodedText);
+        }
+      ).catch(function (err) { mostrarToast('No se pudo abrir la camara', true); });
+    } else {
+      detenerCamara();
+    }
+  }
+
+  function detenerCamara() {
+    const reader = document.getElementById('reader');
+    if (html5QrCode) {
+      html5QrCode.stop().then(function () { html5QrCode.clear(); }).catch(function () {});
+    }
+    reader.classList.add('hidden');
+  }
+
+  // ---------- CATALOGOS (admin) ----------
+  function mostrarCatalogos() {
+    document.getElementById('view-app').classList.add('hidden');
+    document.getElementById('view-catalogos').classList.remove('hidden');
+    cambiarTabCatalogo('camara');
+  }
+
+  function volverAlApp() {
+    document.getElementById('view-catalogos').classList.add('hidden');
+    document.getElementById('view-app').classList.remove('hidden');
+    cargarCatalogos();
+  }
+
+  function cambiarTabCatalogo(tipo) {
+    tabCatalogoActual = tipo;
+    ['camara', 'calle', 'nivel'].forEach(function (t) {
+      document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tipo);
+    });
+    document.getElementById('catalogoError').textContent = '';
+    renderListaCatalogo();
+  }
+
+  function renderListaCatalogo() {
+    llamarApi('getCatalogos')
+      .then(function (res) {
+        const key = tabCatalogoActual === 'camara' ? 'camaras' : tabCatalogoActual === 'calle' ? 'calles' : 'niveles';
+        catalogos = res;
+        const ul = document.getElementById('listaCatalogo');
+        ul.innerHTML = '';
+        res[key].forEach(function (valor) {
+          const li = document.createElement('li');
+          li.innerHTML = '<span></span><button>Eliminar</button>';
+          li.querySelector('span').textContent = valor;
+          li.querySelector('button').onclick = function () { eliminarValorCatalogo(valor); };
+          ul.appendChild(li);
+        });
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function agregarValorCatalogo() {
+    const input = document.getElementById('nuevoValorCatalogo');
+    const valor = input.value.trim();
+    if (!valor) return;
+    llamarApi('agregarCatalogo', { tipo: tabCatalogoActual, valor: valor })
+      .then(function (res) {
+        if (res.ok) {
+          input.value = '';
+          renderListaCatalogo();
+        } else {
+          document.getElementById('catalogoError').textContent = res.mensaje;
+        }
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function eliminarValorCatalogo(valor) {
+    llamarApi('eliminarCatalogo', { tipo: tabCatalogoActual, valor: valor })
+      .then(function () { renderListaCatalogo(); })
+      .catch(mostrarErrorGeneral);
+  }
+
+  // ---------- UTILIDADES ----------
+  function mostrarToast(texto, esError) {
+    const toast = document.getElementById('toast');
+    toast.textContent = texto;
+    toast.className = 'toast show' + (esError ? ' error' : '');
+    setTimeout(function () { toast.className = 'toast'; }, 2500);
+  }
+
+  function mostrarErrorGeneral(err) {
+    mostrarToast('Error: ' + (err.message || err), true);
+  }
+</script>
+</body>
+</html>
