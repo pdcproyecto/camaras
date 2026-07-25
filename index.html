@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Control de almacenes</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #f2f2ef;
+      margin: 0;
+      padding: 0;
+      color: #222;
+    }
+    .screen { max-width: 480px; margin: 0 auto; padding: 20px 16px 80px; }
+    .hidden { display: none !important; }
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    h2 { font-size: 15px; margin: 0 0 12px; color: #333; }
+    label { display: block; font-size: 12px; color: #666; margin: 10px 0 4px; }
+    input[type=text], input[type=password], input[type=date], input[type=datetime-local], select {
+      width: 100%;
+      height: 42px;
+      font-size: 15px;
+      padding: 0 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fff;
+    }
+    button {
+      width: 100%;
+      height: 44px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #fff;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    button.primary { background: #1d6f56; color: #fff; border: none; }
+    button.danger { background: #f0d9d9; color: #7a1f1f; border: none; }
+    button.secondary { background: #eee; }
+    button.small { width: auto; height: 32px; font-size: 12px; padding: 0 12px; margin: 0; }
+    .row { display: flex; gap: 8px; }
+    .row > * { flex: 1; }
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      max-width: 480px; margin: 0 auto; padding: 14px 16px; background: #fff; border-bottom: 1px solid #ddd;
+    }
+    .topbar span { font-size: 13px; color: #555; }
+    .topbar a { font-size: 13px; color: #1d6f56; text-decoration: none; margin-left: 14px; }
+    .toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #1d6f56; color: #fff; padding: 10px 18px; border-radius: 8px;
+      font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none;
+    }
+    .toast.error { background: #a32d2d; }
+    .toast.show { opacity: 1; }
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal { background: #fff; border-radius: 12px; padding: 20px; max-width: 320px; width: 100%; }
+    .catalog-list { list-style: none; margin: 0 0 10px; padding: 0; max-height: 200px; overflow-y: auto; }
+    .catalog-list li {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 10px; background: #f7f7f5; border-radius: 6px; margin-bottom: 4px; font-size: 14px;
+    }
+    .catalog-list li button { width: auto; height: auto; border: none; background: none; color: #a32d2d; font-size: 13px; margin: 0; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+    .tabs button { margin: 0; width: auto; padding: 0 12px; }
+    .tabs button.active { background: #1d6f56; color: #fff; border: none; }
+    .msg { font-size: 13px; color: #a32d2d; min-height: 16px; }
+    .menu-btn { text-align: left; padding: 0 16px; }
+    .cam-btn { width: auto; height: 42px; padding: 0 14px; margin: 0; white-space: nowrap; }
+    #readerGlobal { width: 100%; border-radius: 8px; overflow: hidden; }
+    .offline-banner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      background: #7a5a1f; color: #fff; font-size: 13px; text-align: center;
+      padding: 8px 12px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="indicadorCola" class="offline-banner hidden" onclick="intentarSincronizarCola()"></div>
+
+  <!-- LOGIN -->
+  <div id="view-login" class="screen">
+    <div class="card" style="margin-top:60px">
+      <h1 style="text-align:center">Control de almacenes</h1>
+      <p style="text-align:center;color:#777;font-size:13px;margin-top:0">Tuneles - Remontes - Camara</p>
+      <label>Usuario</label>
+      <input type="text" id="loginUsuario" placeholder="operador01" autocomplete="username">
+      <label>PIN</label>
+      <input type="password" id="loginPin" placeholder="••••" autocomplete="current-password">
+      <p class="msg" id="loginError"></p>
+      <button class="primary" onclick="hacerLogin()">Ingresar</button>
+    </div>
+  </div>
+
+  <!-- MENU PRINCIPAL -->
+  <div id="view-menu" class="screen hidden">
+    <div class="topbar">
+      <span id="usuarioActual"></span>
+      <a href="#" onclick="cerrarSesion();return false;">Salir</a>
+    </div>
+    <div class="screen">
+      <h1 style="text-align:center;margin:20px 0 24px">Elige un almacen</h1>
+      <button class="primary menu-btn" onclick="irATuneles()">Almacen de tuneles</button>
+      <button class="primary menu-btn" onclick="irARemontes()">Almacen de remontes</button>
+      <button class="primary menu-btn" onclick="irACamara()">Almacen de camara</button>
+      <button class="secondary menu-btn hidden" id="btnMenuAdmin" onclick="irAAdmin()">Administrador</button>
+    </div>
+  </div>
+
+  <!-- ALMACEN DE TUNELES -->
+  <div id="view-tuneles" class="screen hidden">
+    <div class="topbar">
+      <span>Almacen de tuneles</span>
+      <div>
+        <a href="#" onclick="irAMenu();return false;">Inicio</a>
+        <a href="#" onclick="cerrarSesion();return false;">Salir</a>
+      </div>
+    </div>
+    <div class="screen">
+      <div id="cardBatchForm" class="card">
+        <h2>Abrir batch de tunel</h2>
+        <label>Tunel</label>
+        <select id="selTunelNro"></select>
+        <label>Fecha de tuneleo</label>
+        <input type="date" id="inputFechaTunel">
+        <label>Inicio de tuneleo</label>
+        <input type="datetime-local" id="inputInicioTunel">
+        <label>T. de seteo (C)</label>
+        <input type="text" id="inputTSeteo" placeholder="Ej: -2">
+        <button class="primary" onclick="abrirBatchTunel()">Abrir / continuar batch</button>
+      </div>
+
+      <div id="cardBatchActivo" class="card hidden">
+        <h2>Batch activo</h2>
+        <p id="infoBatchActivo" style="font-size:14px;color:#333;margin:0 0 4px"></p>
+        <div class="row">
+          <button class="secondary" onclick="cambiarBatch()">Cambiar batch</button>
+          <button class="danger" id="btnFinalizarBatch" onclick="finalizarBatch()">Finalizar batch</button>
+        </div>
+      </div>
+
+      <div id="cardEscaneoTunel" class="card hidden">
+        <h2>Escanear pallet</h2>
+        <label>Codigo de pallet</label>
+        <div class="row">
+          <input type="text" id="inputPalletTunel" placeholder="Escanea el codigo">
+          <button type="button" class="secondary cam-btn" onclick="abrirCamaraPara('inputPalletTunel', procesarEscaneoTunel)">Camara</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 id="tituloListaBatches">Batches</h2>
+        <ul class="catalog-list" id="listaBatches"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALMACEN DE REMONTES -->
+  <div id="view-remontes" class="screen hidden">
+    <div class="topbar">
+      <span>Almacen de remontes</span>
+      <div>
+        <a href="#" onclick="irAMenu();return false;">Inicio</a>
+        <a href="#" onclick="cerrarSesion();return false;">Salir</a>
+      </div>
+    </div>
+    <div class="screen">
+      <div class="tabs">
+        <button id="remTabEscanear" class="active" onclick="cambiarSeccionRemontes('escanear')">Escanear</button>
+        <button id="remTabHistorial" onclick="cambiarSeccionRemontes('historial')">Historial</button>
+      </div>
+
+      <div id="seccionRemontesEscanear">
+        <div class="card">
+          <h2>Fecha de remonte</h2>
+          <label>Fecha en que se realizo la operacion</label>
+          <input type="date" id="inputFechaRemonte">
+        </div>
+        <div class="card">
+          <h2>Escanear pallet</h2>
+          <label>Codigo de pallet</label>
+          <div class="row">
+            <input type="text" id="inputPalletRemonte" placeholder="Escanea el codigo">
+            <button type="button" class="secondary cam-btn" onclick="abrirCamaraPara('inputPalletRemonte', procesarEscaneoRemonte)">Camara</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="seccionRemontesHistorial" class="card hidden">
+        <h2>Pallets escaneados</h2>
+        <ul class="catalog-list" id="listaRemontes"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALMACEN DE CAMARA -->
+  <div id="view-camara" class="screen hidden">
+    <div class="topbar">
+      <span>Almacen de camara</span>
+      <div>
+        <a href="#" onclick="irAMenu();return false;">Inicio</a>
+        <a href="#" onclick="cerrarSesion();return false;">Salir</a>
+      </div>
+    </div>
+
+    <div class="screen">
+      <div class="tabs">
+        <button id="camTabEscanear" class="active" onclick="cambiarSeccionCamara('escanear')">Escanear</button>
+        <button id="camTabMapa" onclick="cambiarSeccionCamara('mapa')">Ver mapa</button>
+      </div>
+
+      <div id="seccionCamaraEscanear">
+        <div class="card">
+          <h2>Ubicacion actual</h2>
+          <label>Camara</label>
+          <select id="selCamara"></select>
+          <label>Calle</label>
+          <select id="selCalle"></select>
+          <label>Nivel</label>
+          <select id="selNivel"></select>
+        </div>
+
+        <div class="card">
+          <h2>Escanear pallet</h2>
+          <label>Codigo de pallet</label>
+          <div class="row">
+            <input type="text" id="inputPallet" placeholder="Escanea el codigo">
+            <button type="button" class="secondary cam-btn" onclick="abrirCamaraPara('inputPallet', procesarEscaneo)">Camara</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="seccionCamaraMapa" class="hidden">
+        <div class="card">
+          <h2>Buscar pallet</h2>
+          <label>Codigo de pallet</label>
+          <div class="row">
+            <input type="text" id="inputBuscarPallet" placeholder="Codigo de pallet">
+            <button class="secondary small" style="height:42px" onclick="buscarUbicacionPallet()">Buscar</button>
+            <button type="button" class="secondary cam-btn" onclick="abrirCamaraPara('inputBuscarPallet', buscarUbicacionPallet)">Camara</button>
+          </div>
+          <p class="msg" id="resultadoBusquedaPallet" style="color:#333"></p>
+        </div>
+
+        <div class="card">
+          <h2>Ver ocupacion por camara</h2>
+          <label>Camara</label>
+          <select id="selCamaraMapa"></select>
+          <button class="primary" onclick="verOcupacionCamara()">Ver niveles y calles</button>
+          <ul class="catalog-list" id="listaOcupacionCamara" style="margin-top:12px"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DUPLICADO (camara) -->
+  <div id="modalDuplicado" class="modal-bg hidden">
+    <div class="modal">
+      <h2 style="margin-top:0">Pallet ya ubicado</h2>
+      <p style="font-size:13px;color:#555;line-height:1.5" id="textoDuplicado"></p>
+      <button class="primary" onclick="irACambiarPosicion()">Cambiar posicion</button>
+      <button class="danger" onclick="confirmarReporteDuplicado()">Reportar duplicado</button>
+      <button class="secondary" onclick="cerrarModalDuplicado()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL DUPLICADO (tunel) -->
+  <div id="modalDuplicadoTunel" class="modal-bg hidden">
+    <div class="modal">
+      <h2 style="margin-top:0">Pallet ya en un batch</h2>
+      <p style="font-size:13px;color:#555;line-height:1.5" id="textoDuplicadoTunel"></p>
+      <button class="primary" onclick="irACambiarBatch()">Cambiar de batch</button>
+      <button class="danger" onclick="confirmarReporteDuplicadoTunel()">Reportar duplicado</button>
+      <button class="secondary" onclick="cerrarModalDuplicadoTunel()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL DUPLICADO (remontes) -->
+  <div id="modalDuplicadoRemonte" class="modal-bg hidden">
+    <div class="modal">
+      <h2 style="margin-top:0">Pallet ya escaneado</h2>
+      <p style="font-size:13px;color:#555;line-height:1.5" id="textoDuplicadoRemonte"></p>
+      <button class="primary" onclick="irActualizarRemonte()">Actualizar registro</button>
+      <button class="danger" onclick="confirmarReporteDuplicadoRemonte()">Reportar duplicado</button>
+      <button class="secondary" onclick="cerrarModalDuplicadoRemonte()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- ADMINISTRADOR (catalogos + usuarios) -->
+  <div id="view-admin" class="screen hidden">
+    <div class="topbar">
+      <span>Administrador</span>
+      <a href="#" onclick="irAMenu();return false;">Inicio</a>
+    </div>
+    <div class="screen">
+      <div class="tabs" style="margin-bottom:16px">
+        <button id="admTabCatalogos" class="active" onclick="cambiarSeccionAdmin('catalogos')">Catalogos</button>
+        <button id="admTabUsuarios" onclick="cambiarSeccionAdmin('usuarios')">Usuarios</button>
+      </div>
+
+      <div id="seccionCatalogos" class="card">
+        <div class="tabs">
+          <button id="tabCamara" class="active" onclick="cambiarTabCatalogo('camara')">Camaras</button>
+          <button id="tabCalle" onclick="cambiarTabCatalogo('calle')">Calles</button>
+          <button id="tabNivel" onclick="cambiarTabCatalogo('nivel')">Niveles</button>
+          <button id="tabTunel" onclick="cambiarTabCatalogo('tunel')">Tuneles</button>
+        </div>
+        <ul class="catalog-list" id="listaCatalogo"></ul>
+        <div class="row">
+          <input type="text" id="nuevoValorCatalogo" placeholder="Nuevo valor">
+          <button class="primary small" onclick="agregarValorCatalogo()">Agregar</button>
+        </div>
+        <p class="msg" id="catalogoError"></p>
+      </div>
+
+      <div id="seccionUsuarios" class="card hidden">
+        <h2>Usuarios</h2>
+        <ul class="catalog-list" id="listaUsuarios"></ul>
+        <label>Usuario</label>
+        <input type="text" id="nuevoUsuarioNombre" placeholder="ej: operador02">
+        <label>PIN</label>
+        <input type="text" id="nuevoUsuarioPin" placeholder="4 a 6 digitos">
+        <label>Rol</label>
+        <select id="nuevoUsuarioRol">
+          <option value="operador">Operador</option>
+          <option value="supervisor">Supervisor</option>
+          <option value="administrador">Administrador</option>
+        </select>
+        <button class="primary" onclick="crearUsuarioNuevo()">Crear usuario</button>
+        <p class="msg" id="usuarioError"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CAMARA (escaneo de codigo de barras/QR, reutilizable en todos los almacenes) -->
+  <div id="modalCamara" class="modal-bg hidden">
+    <div class="modal" style="max-width:360px">
+      <h2 style="margin-top:0">Escanear con la camara</h2>
+      <div id="readerGlobal"></div>
+      <button class="secondary" onclick="cerrarCamara()">Cancelar</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxdTjyWSgilSdYQNas0B2v2wDH6Lk_CVMiLbCPQh6-71NYAR04BV5k5JYEV2r18Nq6s/exec';
+
+  let usuarioActual = null;
+  let rolActual = null;
+  let catalogos = { camaras: [], calles: [], niveles: [], tuneles: [] };
+  let codigoPalletActivo = null;
+  let tabCatalogoActual = 'camara';
+  let batchActivo = null; // { batchId, nroTunel, fecha, batch }
+
+  const VISTAS = ['view-menu', 'view-tuneles', 'view-remontes', 'view-camara', 'view-admin'];
+
+  // ---------- API ----------
+  // Si la pagina se abre desde el propio link de Apps Script, usa google.script.run
+  // (no tiene problemas de CORS). Si se hospeda aparte (ej. GitHub Pages), usa fetch
+  // contra API_URL con GET (las respuestas GET si traen el header CORS).
+  function llamarApi(action, params) {
+    params = params || {};
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      return new Promise(function (resolve, reject) {
+        const runner = google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);
+        switch (action) {
+          case 'login': runner.login(params.usuario, params.pin); break;
+          case 'getCatalogos': runner.getCatalogos(); break;
+          case 'agregarCatalogo': runner.agregarCatalogo(params.tipo, params.valor); break;
+          case 'eliminarCatalogo': runner.eliminarCatalogo(params.tipo, params.valor); break;
+          case 'buscarPallet': runner.buscarPallet(params.codigo); break;
+          case 'guardarUbicacion': runner.guardarUbicacion(params.codigo, params.camara, params.calle, params.nivel, params.usuario); break;
+          case 'reportarDuplicado': runner.reportarDuplicado(params.codigo, params.usuario); break;
+          case 'escanearCamara': runner.escanearCamara(params.codigo, params.camara, params.calle, params.nivel, params.usuario); break;
+          case 'crearOAbrirBatchTunel': runner.crearOAbrirBatchTunel(params.nroTunel, params.fecha, params.inicioTuneleo, params.tSeteo, params.usuario); break;
+          case 'finalizarBatchTunel': runner.finalizarBatchTunel(params.batchId); break;
+          case 'listarBatchesTunel': runner.listarBatchesTunel(); break;
+          case 'listarPalletsDeBatch': runner.listarPalletsDeBatch(params.batchId); break;
+          case 'eliminarBatchTunel': runner.eliminarBatchTunel(params.batchId); break;
+          case 'buscarPalletEnTunel': runner.buscarPalletEnTunel(params.codigo); break;
+          case 'registrarPalletEnTunel': runner.registrarPalletEnTunel(params.batchId, params.codigo, params.usuario); break;
+          case 'reportarDuplicadoTunel': runner.reportarDuplicadoTunel(params.codigo, params.usuario); break;
+          case 'escanearTunel': runner.escanearTunel(params.batchId, params.codigo, params.usuario); break;
+          case 'registrarRemonte': runner.registrarRemonte(params.codigo, params.fechaRemonte, params.usuario); break;
+          case 'buscarPalletEnRemonte': runner.buscarPalletEnRemonte(params.codigo); break;
+          case 'reportarDuplicadoRemonte': runner.reportarDuplicadoRemonte(params.codigo, params.usuario); break;
+          case 'escanearRemonte': runner.escanearRemonte(params.codigo, params.fechaRemonte, params.usuario); break;
+          case 'listarRemontes': runner.listarRemontes(); break;
+          case 'eliminarRemonte': runner.eliminarRemonte(params.codigo); break;
+          case 'listarPalletsPorCamara': runner.listarPalletsPorCamara(params.camara); break;
+          case 'listarUsuarios': runner.listarUsuarios(); break;
+          case 'crearUsuario': runner.crearUsuario(params.usuario, params.pin, params.rol, params.creadoPor); break;
+          case 'eliminarUsuario': runner.eliminarUsuario(params.usuario, params.creadoPor); break;
+          default: reject(new Error('Accion desconocida: ' + action));
+        }
+      });
+    }
+    params.action = action;
+    const query = Object.keys(params)
+      .map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(params[k] == null ? '' : params[k]); })
+      .join('&');
+    return fetch(API_URL + '?' + query).then(function (r) { return r.json(); });
+  }
+
+  // ---------- LOGIN / NAVEGACION ----------
+  function hacerLogin() {
+    const usuario = document.getElementById('loginUsuario').value.trim();
+    const pin = document.getElementById('loginPin').value.trim();
+    document.getElementById('loginError').textContent = '';
+    if (!usuario || !pin) {
+      document.getElementById('loginError').textContent = 'Ingresa usuario y PIN';
+      return;
+    }
+    llamarApi('login', { usuario: usuario, pin: pin })
+      .then(function (res) {
+        if (res.ok) {
+          usuarioActual = res.usuario;
+          rolActual = res.rol;
+          guardarSesion_(usuarioActual, rolActual);
+          document.getElementById('usuarioActual').textContent = usuarioActual + ' (' + res.rol + ')';
+          document.getElementById('btnMenuAdmin').classList.toggle('hidden', rolActual === 'operador');
+          document.getElementById('view-login').classList.add('hidden');
+          cargarCatalogos();
+          irAMenu();
+        } else {
+          document.getElementById('loginError').textContent = res.mensaje;
+        }
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function cerrarSesion() {
+    usuarioActual = null;
+    rolActual = null;
+    batchActivo = null;
+    borrarSesion_();
+    ocultarTodasLasVistas();
+    document.getElementById('view-login').classList.remove('hidden');
+    document.getElementById('loginPin').value = '';
+  }
+
+  // ---------- SESION PERSISTENTE (no pide login de nuevo al reabrir) ----------
+  function guardarSesion_(usuario, rol) {
+    try { localStorage.setItem('sesion_activa', JSON.stringify({ usuario: usuario, rol: rol })); } catch (e) {}
+  }
+
+  function borrarSesion_() {
+    try { localStorage.removeItem('sesion_activa'); } catch (e) {}
+  }
+
+  function restaurarSesion_() {
+    try {
+      const raw = localStorage.getItem('sesion_activa');
+      if (!raw) return false;
+      const sesion = JSON.parse(raw);
+      if (!sesion || !sesion.usuario) return false;
+      usuarioActual = sesion.usuario;
+      rolActual = sesion.rol;
+      document.getElementById('usuarioActual').textContent = usuarioActual + ' (' + rolActual + ')';
+      document.getElementById('btnMenuAdmin').classList.toggle('hidden', rolActual === 'operador');
+      document.getElementById('view-login').classList.add('hidden');
+      cargarCatalogos();
+      irAMenu();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function ocultarTodasLasVistas() {
+    VISTAS.forEach(function (id) { document.getElementById(id).classList.add('hidden'); });
+  }
+
+  function irAMenu() {
+    ocultarTodasLasVistas();
+    document.getElementById('view-menu').classList.remove('hidden');
+  }
+
+  function irACamara() {
+    ocultarTodasLasVistas();
+    document.getElementById('view-camara').classList.remove('hidden');
+    rellenarSelectsCamara(); // instantaneo, con lo que ya haya en memoria/cache
+    cargarCatalogos().then(rellenarSelectsCamara); // refresca en segundo plano
+    cambiarSeccionCamara('escanear');
+    document.getElementById('inputPallet').focus();
+  }
+
+  function rellenarSelectsCamara() {
+    llenarSelect('selCamara', catalogos.camaras);
+    llenarSelect('selCalle', catalogos.calles);
+    llenarSelect('selNivel', catalogos.niveles);
+    llenarSelect('selCamaraMapa', catalogos.camaras);
+  }
+
+  function cambiarSeccionCamara(seccion) {
+    document.getElementById('camTabEscanear').classList.toggle('active', seccion === 'escanear');
+    document.getElementById('camTabMapa').classList.toggle('active', seccion === 'mapa');
+    document.getElementById('seccionCamaraEscanear').classList.toggle('hidden', seccion !== 'escanear');
+    document.getElementById('seccionCamaraMapa').classList.toggle('hidden', seccion !== 'mapa');
+  }
+
+  function buscarUbicacionPallet() {
+    const codigo = document.getElementById('inputBuscarPallet').value.trim();
+    const resultado = document.getElementById('resultadoBusquedaPallet');
+    resultado.textContent = '';
+    if (!codigo) return;
+    llamarApi('buscarPallet', { codigo: codigo })
+      .then(function (res) {
+        if (res.existe) {
+          resultado.style.color = '#1d6f56';
+          resultado.textContent = 'Pallet ' + codigo + ': Camara ' + res.camara + ', Calle ' + res.calle + ', Nivel ' + res.nivel;
+        } else {
+          resultado.style.color = '#a32d2d';
+          resultado.textContent = 'Ese pallet no tiene ubicacion de camara registrada';
+        }
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function verOcupacionCamara() {
+    const camara = document.getElementById('selCamaraMapa').value;
+    if (!camara) return;
+    llamarApi('listarPalletsPorCamara', { camara: camara })
+      .then(function (res) {
+        const ul = document.getElementById('listaOcupacionCamara');
+        ul.innerHTML = '';
+        if (!res.items || !res.items.length) {
+          const li = document.createElement('li');
+          li.textContent = 'Sin pallets ubicados en ' + camara;
+          li.style.justifyContent = 'flex-start';
+          ul.appendChild(li);
+          return;
+        }
+        res.items.forEach(function (it) {
+          const li = document.createElement('li');
+          li.innerHTML = '<span></span>';
+          li.querySelector('span').textContent = 'Nivel ' + it.nivel + ' - Calle ' + it.calle + ' - ' + it.codigo;
+          ul.appendChild(li);
+        });
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function irARemontes() {
+    ocultarTodasLasVistas();
+    document.getElementById('view-remontes').classList.remove('hidden');
+    document.getElementById('inputFechaRemonte').value = fechaLocalYMD_(new Date());
+    cambiarSeccionRemontes('escanear');
+    document.getElementById('inputPalletRemonte').focus();
+  }
+
+  function cambiarSeccionRemontes(seccion) {
+    document.getElementById('remTabEscanear').classList.toggle('active', seccion === 'escanear');
+    document.getElementById('remTabHistorial').classList.toggle('active', seccion === 'historial');
+    document.getElementById('seccionRemontesEscanear').classList.toggle('hidden', seccion !== 'escanear');
+    document.getElementById('seccionRemontesHistorial').classList.toggle('hidden', seccion !== 'historial');
+    if (seccion === 'historial') renderListaRemontes();
+  }
+
+  function renderListaRemontes() {
+    llamarApi('listarRemontes')
+      .then(function (res) {
+        const ul = document.getElementById('listaRemontes');
+        ul.innerHTML = '';
+        if (!res || !res.items) {
+          const li = document.createElement('li');
+          li.textContent = (res && res.mensaje) ? res.mensaje : 'No se pudo cargar el historial';
+          li.style.justifyContent = 'flex-start';
+          ul.appendChild(li);
+          return;
+        }
+        if (!res.items.length) {
+          const li = document.createElement('li');
+          li.textContent = 'Aun no hay pallets escaneados en remontes';
+          li.style.justifyContent = 'flex-start';
+          ul.appendChild(li);
+          return;
+        }
+        res.items.forEach(function (it) {
+          const li = document.createElement('li');
+          li.innerHTML = '<span></span><button style="color:#a32d2d">Eliminar</button>';
+          li.querySelector('span').textContent = it.codigo + ' - ' + fechaCorta_(it.fechaRemonte) + ' (' + it.usuario + ')';
+          li.querySelector('button').onclick = function () { eliminarRemonteExistente(it.codigo); };
+          ul.appendChild(li);
+        });
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function eliminarRemonteExistente(codigo) {
+    if (!confirm('Vas a eliminar el registro de remonte del pallet ' + codigo + '. Confirmas?')) return;
+    llamarApi('eliminarRemonte', { codigo: codigo })
+      .then(function (res) {
+        if (res.ok) {
+          mostrarToast('Registro eliminado');
+          renderListaRemontes();
+        } else {
+          mostrarToast(res.mensaje || 'Error', true);
+        }
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function irATuneles() {
+    ocultarTodasLasVistas();
+    document.getElementById('view-tuneles').classList.remove('hidden');
+    llenarSelect('selTunelNro', catalogos.tuneles); // instantaneo
+    cargarCatalogos().then(function () { llenarSelect('selTunelNro', catalogos.tuneles); }); // refresca
+
+    const ahora = new Date();
+    document.getElementById('inputFechaTunel').value = fechaLocalYMD_(ahora);
+    const local = new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000);
+    document.getElementById('inputInicioTunel').value = local.toISOString().slice(0, 16);
+
+    mostrarFormularioBatch();
+  }
+
+  function irAAdmin() {
+    ocultarTodasLasVistas();
+    document.getElementById('view-admin').classList.remove('hidden');
+    cambiarSeccionAdmin('catalogos');
+  }
+
+  function cambiarSeccionAdmin(seccion) {
+    document.getElementById('admTabCatalogos').classList.toggle('active', seccion === 'catalogos');
+    document.getElementById('admTabUsuarios').classList.toggle('active', seccion === 'usuarios');
+    document.getElementById('seccionCatalogos').classList.toggle('hidden', seccion !== 'catalogos');
+    document.getElementById('seccionUsuarios').classList.toggle('hidden', seccion !== 'usuarios');
+    if (seccion === 'catalogos') {
+      cambiarTabCatalogo(tabCatalogoActual);
+    } else {
+      renderListaUsuarios();
+    }
+  }
+
+  // ---------- CATALOGOS (dropdowns de los formularios) ----------
+  function cargarCatalogosCache_() {
+    try {
+      const raw = localStorage.getItem('catalogos_cache');
+      if (raw) catalogos = JSON.parse(raw);
+    } catch (e) { /* ignora si no hay soporte de localStorage */ }
+  }
+
+  function cargarCatalogos() {
+    return llamarApi('getCatalogos')
+      .then(function (res) {
+        catalogos = res;
+        try { localStorage.setItem('catalogos_cache', JSON.stringify(res)); } catch (e) {}
+        return res;
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function fechaCorta_(valor) {
+    // El backend puede devolver fechas como texto "2026-07-24" o como ISO completo
+    // "2026-07-24T05:00:00.000Z" (Apps Script serializa los Date como ISO en UTC).
+    // Nos quedamos solo con la parte de la fecha, sin hora.
+    if (!valor) return '';
+    const texto = String(valor);
+    return texto.indexOf('T') !== -1 ? texto.split('T')[0] : texto;
+  }
+
+  function fechaLocalYMD_(fecha) {
+    const y = fecha.getFullYear();
+    const m = String(fecha.getMonth() + 1).padStart(2, '0');
+    const d = String(fecha.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + d;
+  }
+
+  function llenarSelect(id, valores) {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '';
+    (valores || []).forEach(function (v) {
+      const opt = document.createElement('option');
+      opt.value = v;
+      opt.textContent = v;
+      sel.appendChild(opt);
+    });
+  }
+
+  // ---------- ALMACEN DE CAMARA ----------
+  cargarCatalogosCache_(); // datos de la ultima sesion, disponibles antes de iniciar sesion de nuevo
+  cargarColaPendiente_();
+  restaurarSesion_(); // si ya habia una sesion guardada, entra directo sin pedir login de nuevo
+  window.addEventListener('online', intentarSincronizarCola);
+  setInterval(intentarSincronizarCola, 20000);
+  intentarSincronizarCola();
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('inputPallet').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); procesarEscaneo(); }
+    });
+    document.getElementById('inputPalletTunel').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); procesarEscaneoTunel(); }
+    });
+    document.getElementById('inputPalletRemonte').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); procesarEscaneoRemonte(); }
+    });
+  });
+
+  function ubicacionSeleccionada() {
+    return {
+      camara: document.getElementById('selCamara').value,
+      calle: document.getElementById('selCalle').value,
+      nivel: document.getElementById('selNivel').value
+    };
+  }
+
+  function procesarEscaneo() {
+    const input = document.getElementById('inputPallet');
+    const codigo = input.value.trim();
+    if (!codigo) return;
+    codigoPalletActivo = codigo;
+    const ub = ubicacionSeleccionada();
+    const datos = { codigo: codigo, camara: ub.camara, calle: ub.calle, nivel: ub.nivel, usuario: usuarioActual };
+
+    if (navigator.onLine === false) {
+      encolarPendiente('camara', datos);
+      mostrarToast('Sin conexion: guardado en el celular, se subira solo');
+      limpiarInputPallet();
+      return;
+    }
+
+    llamarApi('escanearCamara', datos)
+      .then(function (res) {
+        if (res.resultado === 'duplicado') {
+          mostrarModalDuplicado(res);
+        } else if (res.resultado === 'guardado') {
+          mostrarToast('Registro exitoso');
+          limpiarInputPallet();
+        } else {
+          mostrarToast(res.mensaje || 'Error', true);
+        }
+      })
+      .catch(function () {
+        encolarPendiente('camara', datos);
+        mostrarToast('Sin conexion: guardado en el celular, se subira solo');
+        limpiarInputPallet();
+      });
+  }
+
+  function limpiarInputPallet() {
+    const input = document.getElementById('inputPallet');
+    input.value = '';
+    codigoPalletActivo = null;
+    input.focus();
+  }
+
+  function mostrarModalDuplicado(info) {
+    document.getElementById('textoDuplicado').textContent =
+      'El pallet ' + info.codigo + ' ya esta ubicado en ' + info.camara + ', ' + info.calle + ', ' + info.nivel +
+      '. Que deseas hacer?';
+    document.getElementById('modalDuplicado').classList.remove('hidden');
+  }
+
+  function cerrarModalDuplicado() {
+    document.getElementById('modalDuplicado').classList.add('hidden');
+    limpiarInputPallet();
+  }
+
+  function irACambiarPosicion() {
+    document.getElementById('modalDuplicado').classList.add('hidden');
+    const ub = ubicacionSeleccionada();
+    llamarApi('guardarUbicacion', {
+      codigo: codigoPalletActivo, camara: ub.camara, calle: ub.calle, nivel: ub.nivel, usuario: usuarioActual
+    })
+      .then(function () {
+        mostrarToast('Ubicacion actualizada');
+        limpiarInputPallet();
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function confirmarReporteDuplicado() {
+    llamarApi('reportarDuplicado', { codigo: codigoPalletActivo, usuario: usuarioActual })
+      .then(function () {
+        mostrarToast('Duplicado reportado');
+        document.getElementById('modalDuplicado').classList.add('hidden');
+        limpiarInputPallet();
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  // ---------- ALMACEN DE TUNELES ----------
+  let codigoPalletTunelActivo = null;
+
+  function mostrarFormularioBatch() {
+    batchActivo = null;
+    document.getElementById('cardBatchForm').classList.remove('hidden');
+    document.getElementById('cardBatchActivo').classList.add('hidden');
+    document.getElementById('cardEscaneoTunel').classList.add('hidden');
+    document.getElementById('tituloListaBatches').textContent = 'Batches';
+    renderListaBatches();
+  }
+
+  function renderListaBatches() {
+    llamarApi('listarBatchesTunel')
+      .then(function (res) {
+        const ul = document.getElementById('listaBatches');
+        ul.innerHTML = '';
+        if (!res.items || !res.items.length) {
+          const li = document.createElement('li');
+          li.textContent = 'Aun no hay batches creados';
+          li.style.justifyContent = 'flex-start';
+          ul.appendChild(li);
+          return;
+        }
+        res.items.forEach(function (b) {
+          const li = document.createElement('li');
+          li.innerHTML = '<span></span><div style="display:flex;gap:6px"><button>Entrar</button><button style="color:#a32d2d">Eliminar</button></div>';
+          li.querySelector('span').textContent =
+            b.nroTunel + ' - Batch ' + b.batch + ' - ' + fechaCorta_(b.fecha) + ' - ' + b.estado + ' (' + b.cantidadPallets + ' pallets)';
+          const botones = li.querySelectorAll('button');
+          botones[0].onclick = function () { entrarABatch(b); };
+          botones[1].onclick = function () { eliminarBatch(b); };
+          ul.appendChild(li);
+        });
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function eliminarBatch(b) {
+    if (!confirm('Vas a eliminar el batch ' + b.nroTunel + ' - Batch ' + b.batch + ' - ' + fechaCorta_(b.fecha) + '. Esta accion no se puede deshacer. Confirmas?')) {
+      return;
+    }
+    llamarApi('eliminarBatchTunel', { batchId: b.batchId })
+      .then(function (res) {
+        if (res.ok) {
+          mostrarToast('Batch eliminado');
+          renderListaBatches();
+        } else {
+          mostrarToast(res.mensaje || 'Error', true);
+        }
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function entrarABatch(b) {
+    batchActivo = { batchId: b.batchId, nroTunel: b.nroTunel, fecha: b.fecha, batch: b.batch, estado: b.estado };
+    document.getElementById('infoBatchActivo').textContent =
+      b.nroTunel + ' - Batch ' + b.batch + ' - ' + fechaCorta_(b.fecha) + ' - ' + b.estado;
+    document.getElementById('cardBatchForm').classList.add('hidden');
+    document.getElementById('cardBatchActivo').classList.remove('hidden');
+
+    const cerrado = b.estado === 'Cerrado';
+    document.getElementById('btnFinalizarBatch').classList.toggle('hidden', cerrado);
+    document.getElementById('cardEscaneoTunel').classList.toggle('hidden', cerrado);
+    if (!cerrado) document.getElementById('inputPalletTunel').focus();
+
+    document.getElementById('tituloListaBatches').textContent = 'Pallets en este batch';
+    renderListaPalletsBatch();
+  }
+
+  function renderListaPalletsBatch() {
+    if (!batchActivo) return;
+    llamarApi('listarPalletsDeBatch', { batchId: batchActivo.batchId })
+      .then(function (res) {
+        const ul = document.getElementById('listaBatches');
+        ul.innerHTML = '';
+        if (!res.items || !res.items.length) {
+          const li = document.createElement('li');
+          li.textContent = 'Aun no hay pallets en este batch';
+          li.style.justifyContent = 'flex-start';
+          ul.appendChild(li);
+          return;
+        }
+        res.items.forEach(function (it) {
+          const li = document.createElement('li');
+          li.innerHTML = '<span></span>';
+          li.querySelector('span').textContent = it.codigo;
+          ul.appendChild(li);
+        });
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function abrirBatchTunel() {
+    const nroTunel = document.getElementById('selTunelNro').value;
+    const fecha = document.getElementById('inputFechaTunel').value;
+    const inicioTuneleo = document.getElementById('inputInicioTunel').value;
+    const tSeteo = document.getElementById('inputTSeteo').value;
+
+    if (!nroTunel || !fecha) {
+      mostrarToast('Selecciona tunel y fecha', true);
+      return;
+    }
+
+    if (!confirm('Vas a abrir o continuar el batch de ' + nroTunel + ' para la fecha ' + fecha + '. Confirmas?')) {
+      return;
+    }
+
+    llamarApi('crearOAbrirBatchTunel', {
+      nroTunel: nroTunel, fecha: fecha, inicioTuneleo: inicioTuneleo, tSeteo: tSeteo, usuario: usuarioActual
+    })
+      .then(function (res) {
+        if (!res.ok) { mostrarToast(res.mensaje || 'Error', true); return; }
+        entrarABatch({ batchId: res.batchId, nroTunel: res.nroTunel, fecha: res.fecha, batch: res.batch, estado: 'En proceso' });
+        mostrarToast(res.nuevo ? 'Batch creado' : 'Continuando batch existente');
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function cambiarBatch() {
+    mostrarFormularioBatch();
+  }
+
+  function finalizarBatch() {
+    if (!batchActivo) return;
+    if (!confirm('Vas a cerrar este batch. Ya no se podran agregar mas pallets. Confirmas?')) return;
+    llamarApi('finalizarBatchTunel', { batchId: batchActivo.batchId })
+      .then(function (res) {
+        if (res.ok) {
+          mostrarToast('Batch finalizado');
+          mostrarFormularioBatch();
+        } else {
+          mostrarToast(res.mensaje || 'Error', true);
+        }
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function procesarEscaneoTunel() {
+    if (!batchActivo || batchActivo.estado === 'Cerrado') return;
+    const input = document.getElementById('inputPalletTunel');
+    const codigo = input.value.trim();
+    if (!codigo) return;
+    codigoPalletTunelActivo = codigo;
+    const datos = { batchId: batchActivo.batchId, codigo: codigo, usuario: usuarioActual };
+
+    if (navigator.onLine === false) {
+      encolarPendiente('tunel', datos);
+      mostrarToast('Sin conexion: guardado en el celular, se subira solo');
+      limpiarInputPalletTunel();
+      return;
+    }
+
+    llamarApi('escanearTunel', datos)
+      .then(function (res) {
+        if (res.resultado === 'duplicado') {
+          mostrarModalDuplicadoTunel(res);
+        } else if (res.resultado === 'guardado') {
+          mostrarToast('Registrado en batch ' + batchActivo.batch);
+          limpiarInputPalletTunel();
+          renderListaPalletsBatch();
+        } else {
+          mostrarToast(res.mensaje || 'Error', true);
+        }
+      })
+      .catch(function () {
+        encolarPendiente('tunel', datos);
+        mostrarToast('Sin conexion: guardado en el celular, se subira solo');
+        limpiarInputPalletTunel();
+      });
+  }
+
+  function guardarPalletEnBatchActivo(codigo) {
+    llamarApi('registrarPalletEnTunel', { batchId: batchActivo.batchId, codigo: codigo, usuario: usuarioActual })
+      .then(function (res) {
+        if (res.ok) {
+          mostrarToast('Registrado en batch ' + batchActivo.batch);
+          limpiarInputPalletTunel();
+          renderListaPalletsBatch();
+        } else {
+          mostrarToast(res.mensaje || 'Error', true);
+        }
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function limpiarInputPalletTunel() {
+    const input = document.getElementById('inputPalletTunel');
+    input.value = '';
+    codigoPalletTunelActivo = null;
+    input.focus();
+  }
+
+  function mostrarModalDuplicadoTunel(info) {
+    document.getElementById('textoDuplicadoTunel').textContent =
+      'El pallet ' + info.codigo + ' ya esta en Tunel ' + info.nroTunel + ', Batch ' + info.batch + ' (' + info.fecha + '). Que deseas hacer?';
+    document.getElementById('modalDuplicadoTunel').classList.remove('hidden');
+  }
+
+  function cerrarModalDuplicadoTunel() {
+    document.getElementById('modalDuplicadoTunel').classList.add('hidden');
+    limpiarInputPalletTunel();
+  }
+
+  function irACambiarBatch() {
+    document.getElementById('modalDuplicadoTunel').classList.add('hidden');
+    guardarPalletEnBatchActivo(codigoPalletTunelActivo);
+  }
+
+  function confirmarReporteDuplicadoTunel() {
+    llamarApi('reportarDuplicadoTunel', { codigo: codigoPalletTunelActivo, usuario: usuarioActual })
+      .then(function () {
+        mostrarToast('Duplicado reportado');
+        document.getElementById('modalDuplicadoTunel').classList.add('hidden');
+        limpiarInputPalletTunel();
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  // ---------- ALMACEN DE REMONTES ----------
+  let codigoPalletRemonteActivo = null;
+
+  function procesarEscaneoRemonte() {
+    const input = document.getElementById('inputPalletRemonte');
+    const codigo = input.value.trim();
+    if (!codigo) return;
+    codigoPalletRemonteActivo = codigo;
+    const fechaRemonte = document.getElementById('inputFechaRemonte').value;
+    const datos = { codigo: codigo, fechaRemonte: fechaRemonte, usuario: usuarioActual };
+
+    if (navigator.onLine === false) {
+      encolarPendiente('remonte', datos);
+      mostrarToast('Sin conexion: guardado en el celular, se subira solo');
+      limpiarInputPalletRemonte();
+      return;
+    }
+
+    llamarApi('escanearRemonte', datos)
+      .then(function (res) {
+        if (res.resultado === 'duplicado') {
+          mostrarModalDuplicadoRemonte(res);
+        } else if (res.resultado === 'guardado') {
+          mostrarToast('Registro exitoso');
+          limpiarInputPalletRemonte();
+        } else {
+          mostrarToast(res.mensaje || 'Error', true);
+        }
+      })
+      .catch(function () {
+        encolarPendiente('remonte', datos);
+        mostrarToast('Sin conexion: guardado en el celular, se subira solo');
+        limpiarInputPalletRemonte();
+      });
+  }
+
+  function guardarRemonte(codigo) {
+    const fechaRemonte = document.getElementById('inputFechaRemonte').value;
+    llamarApi('registrarRemonte', { codigo: codigo, fechaRemonte: fechaRemonte, usuario: usuarioActual })
+      .then(function () {
+        mostrarToast('Registro exitoso');
+        limpiarInputPalletRemonte();
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function limpiarInputPalletRemonte() {
+    const input = document.getElementById('inputPalletRemonte');
+    input.value = '';
+    codigoPalletRemonteActivo = null;
+    input.focus();
+  }
+
+  function mostrarModalDuplicadoRemonte(info) {
+    document.getElementById('textoDuplicadoRemonte').textContent =
+      'El pallet ' + info.codigo + ' ya fue escaneado en remontes el ' + info.fechaRemonte + '. Que deseas hacer?';
+    document.getElementById('modalDuplicadoRemonte').classList.remove('hidden');
+  }
+
+  function cerrarModalDuplicadoRemonte() {
+    document.getElementById('modalDuplicadoRemonte').classList.add('hidden');
+    limpiarInputPalletRemonte();
+  }
+
+  function irActualizarRemonte() {
+    document.getElementById('modalDuplicadoRemonte').classList.add('hidden');
+    guardarRemonte(codigoPalletRemonteActivo);
+  }
+
+  function confirmarReporteDuplicadoRemonte() {
+    llamarApi('reportarDuplicadoRemonte', { codigo: codigoPalletRemonteActivo, usuario: usuarioActual })
+      .then(function () {
+        mostrarToast('Duplicado reportado');
+        document.getElementById('modalDuplicadoRemonte').classList.add('hidden');
+        limpiarInputPalletRemonte();
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  // ---------- CATALOGOS (admin) ----------
+  const CATALOGO_KEYS = { camara: 'camaras', calle: 'calles', nivel: 'niveles', tunel: 'tuneles' };
+
+  function cambiarTabCatalogo(tipo) {
+    tabCatalogoActual = tipo;
+    ['camara', 'calle', 'nivel', 'tunel'].forEach(function (t) {
+      document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tipo);
+    });
+    document.getElementById('catalogoError').textContent = '';
+    renderListaCatalogo();
+  }
+
+  function renderListaCatalogo() {
+    llamarApi('getCatalogos')
+      .then(function (res) {
+        catalogos = res;
+        const key = CATALOGO_KEYS[tabCatalogoActual];
+        const ul = document.getElementById('listaCatalogo');
+        ul.innerHTML = '';
+        (res[key] || []).forEach(function (valor) {
+          const li = document.createElement('li');
+          li.innerHTML = '<span></span><button>Eliminar</button>';
+          li.querySelector('span').textContent = valor;
+          li.querySelector('button').onclick = function () { eliminarValorCatalogo(valor); };
+          ul.appendChild(li);
+        });
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function agregarValorCatalogo() {
+    const input = document.getElementById('nuevoValorCatalogo');
+    const valor = input.value.trim();
+    if (!valor) return;
+    llamarApi('agregarCatalogo', { tipo: tabCatalogoActual, valor: valor })
+      .then(function (res) {
+        if (res.ok) {
+          input.value = '';
+          renderListaCatalogo();
+        } else {
+          document.getElementById('catalogoError').textContent = res.mensaje;
+        }
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function eliminarValorCatalogo(valor) {
+    llamarApi('eliminarCatalogo', { tipo: tabCatalogoActual, valor: valor })
+      .then(function () { renderListaCatalogo(); })
+      .catch(mostrarErrorGeneral);
+  }
+
+  // ---------- ADMINISTRADOR: USUARIOS ----------
+  function renderListaUsuarios() {
+    llamarApi('listarUsuarios')
+      .then(function (res) {
+        const ul = document.getElementById('listaUsuarios');
+        ul.innerHTML = '';
+        (res.usuarios || []).forEach(function (u) {
+          const li = document.createElement('li');
+          li.innerHTML = '<span></span><button>Eliminar</button>';
+          li.querySelector('span').textContent = u.usuario + ' (' + u.rol + ')';
+          li.querySelector('button').onclick = function () { eliminarUsuarioExistente(u.usuario); };
+          ul.appendChild(li);
+        });
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function crearUsuarioNuevo() {
+    const usuario = document.getElementById('nuevoUsuarioNombre').value.trim();
+    const pin = document.getElementById('nuevoUsuarioPin').value.trim();
+    const rol = document.getElementById('nuevoUsuarioRol').value;
+    document.getElementById('usuarioError').textContent = '';
+    if (!usuario || !pin) {
+      document.getElementById('usuarioError').textContent = 'Ingresa usuario y PIN';
+      return;
+    }
+    llamarApi('crearUsuario', { usuario: usuario, pin: pin, rol: rol, creadoPor: usuarioActual })
+      .then(function (res) {
+        if (res.ok) {
+          document.getElementById('nuevoUsuarioNombre').value = '';
+          document.getElementById('nuevoUsuarioPin').value = '';
+          mostrarToast('Usuario creado');
+          renderListaUsuarios();
+        } else {
+          document.getElementById('usuarioError').textContent = res.mensaje;
+        }
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  function eliminarUsuarioExistente(usuario) {
+    llamarApi('eliminarUsuario', { usuario: usuario, creadoPor: usuarioActual })
+      .then(function (res) {
+        if (res.ok) renderListaUsuarios();
+        else mostrarToast(res.mensaje || 'Error', true);
+      })
+      .catch(mostrarErrorGeneral);
+  }
+
+  // ---------- COLA SIN CONEXION (guarda escaneos y los sube al recuperar señal) ----------
+  const COLA_KEY = 'cola_pendiente';
+  let colaPendiente = [];
+
+  function cargarColaPendiente_() {
+    try {
+      const raw = localStorage.getItem(COLA_KEY);
+      colaPendiente = raw ? JSON.parse(raw) : [];
+    } catch (e) { colaPendiente = []; }
+    actualizarIndicadorCola();
+  }
+
+  function guardarColaPendiente_() {
+    try { localStorage.setItem(COLA_KEY, JSON.stringify(colaPendiente)); } catch (e) {}
+  }
+
+  function encolarPendiente(tipo, datos) {
+    colaPendiente.push({ tipo: tipo, datos: datos, ts: Date.now() });
+    guardarColaPendiente_();
+    actualizarIndicadorCola();
+  }
+
+  function actualizarIndicadorCola() {
+    const el = document.getElementById('indicadorCola');
+    if (!el) return;
+    if (colaPendiente.length > 0) {
+      el.textContent = colaPendiente.length + ' escaneo(s) sin subir (toca para reintentar)';
+      el.classList.remove('hidden');
+    } else {
+      el.classList.add('hidden');
+    }
+  }
+
+  /** Ejecuta un item de la cola contra el backend real. */
+  function ejecutarPendiente_(item) {
+    if (item.tipo === 'camara') {
+      return llamarApi('escanearCamara', item.datos).then(function (res) {
+        if (res.resultado === 'duplicado') {
+          mostrarToast('Revisar: ' + item.datos.codigo + ' ya estaba ubicado (quedo marcado como duplicado)', true);
+          return llamarApi('reportarDuplicado', { codigo: item.datos.codigo, usuario: item.datos.usuario });
+        }
+      });
+    }
+    if (item.tipo === 'tunel') {
+      return llamarApi('escanearTunel', item.datos).then(function (res) {
+        if (res.resultado === 'duplicado') {
+          mostrarToast('Revisar: ' + item.datos.codigo + ' ya estaba en un batch (quedo marcado como duplicado)', true);
+          return llamarApi('reportarDuplicadoTunel', { codigo: item.datos.codigo, usuario: item.datos.usuario });
+        }
+      });
+    }
+    if (item.tipo === 'remonte') {
+      return llamarApi('escanearRemonte', item.datos).then(function (res) {
+        if (res.resultado === 'duplicado') {
+          mostrarToast('Revisar: ' + item.datos.codigo + ' ya estaba en remontes (quedo marcado como duplicado)', true);
+          return llamarApi('reportarDuplicadoRemonte', { codigo: item.datos.codigo, usuario: item.datos.usuario });
+        }
+      });
+    }
+    return Promise.resolve();
+  }
+
+  /** Sube la cola pendiente en orden. Si algo falla (sigue sin señal), lo deja para el proximo intento. */
+  function intentarSincronizarCola() {
+    if (!colaPendiente.length) return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+
+    const pendientes = colaPendiente.slice();
+    colaPendiente = [];
+    guardarColaPendiente_();
+    actualizarIndicadorCola();
+
+    function procesarSiguiente(i) {
+      if (i >= pendientes.length) {
+        mostrarToast('Escaneos pendientes sincronizados');
+        return;
+      }
+      ejecutarPendiente_(pendientes[i])
+        .then(function () { procesarSiguiente(i + 1); })
+        .catch(function () {
+          colaPendiente = colaPendiente.concat(pendientes.slice(i));
+          guardarColaPendiente_();
+          actualizarIndicadorCola();
+        });
+    }
+    procesarSiguiente(0);
+  }
+
+  // ---------- CAMARA (escaneo de codigo de barras/QR, reutilizable) ----------
+  let scannerActivo = null;
+
+  function abrirCamaraPara(idInput, alTerminar) {
+    document.getElementById('modalCamara').classList.remove('hidden');
+    scannerActivo = new Html5Qrcode('readerGlobal');
+    scannerActivo.start(
+      { facingMode: 'environment' },
+      { fps: 15, qrbox: 220 },
+      function (decodedText) {
+        cerrarCamara();
+        const input = document.getElementById(idInput);
+        input.value = decodedText;
+        if (typeof alTerminar === 'function') alTerminar();
+      }
+    ).catch(function () {
+      mostrarToast('No se pudo abrir la camara', true);
+      cerrarCamara();
+    });
+  }
+
+  function cerrarCamara() {
+    document.getElementById('modalCamara').classList.add('hidden');
+    if (scannerActivo) {
+      scannerActivo.stop().then(function () { scannerActivo.clear(); }).catch(function () {});
+      scannerActivo = null;
+    }
+  }
+
+  // ---------- UTILIDADES ----------
+  function mostrarToast(texto, esError) {
+    const toast = document.getElementById('toast');
+    toast.textContent = texto;
+    toast.className = 'toast show' + (esError ? ' error' : '');
+    setTimeout(function () { toast.className = 'toast'; }, 2500);
+  }
+
+  function mostrarErrorGeneral(err) {
+    mostrarToast('Error: ' + (err.message || err), true);
+  }
+</script>
+</body>
+</html>
