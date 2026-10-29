@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal Energía · Packing del Carmen</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231f3864'/><path d='M18 4 8 18h7l-2 10 11-15h-7z' fill='%23ffd54a'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1f3864;
+  --navy-2: #2b4a80;
+  --ok: #1e9e57;
+  --ok-bg: #e5f5ec;
+  --bad: #c62828;
+  --bad-bg: #fdecec;
+  --warn: #b26a00;
+  --warn-bg: #fff4e0;
+  --bg: #f3f5f9;
+  --card: #ffffff;
+  --text: #1c2433;
+  --muted: #6b7486;
+  --line: #e2e6ee;
+  --radius: 12px;
+  /* Series de gráficos (paleta validada: CVD y contraste) */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --grid: #e9ecf2;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; }
+h1, h2, h3 { margin: 0; }
+h2 { font-size: 16px; font-weight: 600; }
+h2 small { color: var(--muted); font-weight: 400; }
+h3 { font-size: 14px; margin-bottom: 6px; }
+code { background: #eef1f6; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+
+/* ---------- Layout con menú lateral ---------- */
+:root { --side: #1e2a40; --side-2: #26344f; --side-line: #33425f; --side-text: #c9d2e3; --accent: #2a78d6; }
+.layout { display: flex; min-height: 100vh; }
+.side { width: 272px; flex: none; background: var(--side); color: #fff; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 20; }
+.side-brand { display: flex; align-items: center; gap: 12px; padding: 18px 18px 16px; border-bottom: 1px solid var(--side-line); }
+.side-brand .logo { width: 44px; height: 44px; border-radius: 10px; background: #fff; display: grid; place-items: center; flex: none; }
+.side-brand b { display: block; font-size: 16px; }
+.side-brand small { color: var(--side-text); font-size: 12px; }
+.side-user { padding: 16px 18px 12px; border-bottom: 1px solid var(--side-line); }
+.side-user .row { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--accent); display: grid; place-items: center; font-weight: 700; flex: none; }
+.side-user b { display: block; font-size: 15px; }
+.side-user small { color: var(--side-text); font-size: 12px; }
+.side-logout { margin-top: 10px; background: none; border: 0; color: var(--side-text); font: inherit; font-size: 13.5px; cursor: pointer; padding: 4px 0; display: flex; align-items: center; gap: 8px; }
+.side-logout:hover { color: #fff; }
+.side-nav { padding: 10px 0 24px; }
+.nav-head { width: 100%; display: flex; align-items: center; gap: 12px; background: none; border: 0; color: #fff; font: inherit; font-size: 15px; font-weight: 500; padding: 12px 20px; cursor: pointer; text-align: left; }
+.nav-head:hover { background: var(--side-2); }
+.nav-head svg.ico { width: 18px; height: 18px; flex: none; opacity: .9; }
+.nav-head .chev { margin-left: auto; transition: transform .15s; opacity: .8; }
+.nav-group.open .chev { transform: rotate(90deg); }
+.nav-items { display: none; padding: 2px 0 8px; background: #19243a; }
+.nav-group.open .nav-items { display: block; }
+.nav-items button { width: 100%; display: flex; align-items: center; gap: 10px; background: none; border: 0; color: var(--side-text); font: inherit; font-size: 14px; padding: 9px 20px 9px 34px; cursor: pointer; text-align: left; }
+.nav-items button::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: .7; flex: none; }
+.nav-items button:hover { color: #fff; }
+.nav-items button.active { color: #5aa2f0; font-weight: 500; }
+.nav-sep { border-top: 1px solid var(--side-line); margin: 8px 0; }
+.content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.header { background: #fff; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 14px; padding: 14px 28px; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; }
+.crumb { font-size: 15px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.crumb b { color: var(--text); font-weight: 600; }
+.head-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mes-sel { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.badge { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: #eef1f6; color: var(--muted); }
+.badge.live { background: var(--ok-bg); color: var(--ok); }
+.badge.err { background: var(--bad-bg); color: var(--bad); }
+.burger { display: none; background: none; border: 0; cursor: pointer; padding: 4px; color: inherit; }
+.side .burger { color: #fff; margin-left: auto; }
+.scrim { display: none; }
+
+main { padding: 24px 28px 60px; width: 100%; max-width: 1640px; }
+.view { display: none; }
+.view.active { display: block; }
+
+.card { background: var(--card); border-radius: var(--radius); padding: 18px; margin-bottom: 18px; box-shadow: 0 1px 2px #0000000d, 0 0 0 1px var(--line); }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.hint { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.two > .card { margin-bottom: 0; }
+.stack { display: grid; gap: 18px; margin-bottom: 18px; }
+
+/* ---------- Buttons & forms ---------- */
+.btn { border: 1px solid transparent; border-radius: 8px; padding: 8px 14px; font: inherit; font-weight: 500; cursor: pointer; }
+.btn.primary { background: var(--navy); color: #fff; }
+.btn.primary:hover { background: var(--navy-2); }
+.btn.primary:disabled { opacity: .6; cursor: default; }
+.btn.ghost { background: #fff; border-color: var(--line); color: var(--text); }
+.btn.ghost:hover { background: #f5f7fb; }
+.btn.ghost.light { background: transparent; color: #fff; border-color: #ffffff55; }
+.btn.sm { padding: 5px 10px; font-size: 12.5px; }
+.icon-btn { border: 0; background: none; cursor: pointer; padding: 4px 6px; border-radius: 6px; color: var(--muted); font-size: 13px; }
+.icon-btn:hover { background: #eef1f6; color: var(--text); }
+
+.form-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; align-items: end; }
+.form-grid.four { grid-template-columns: repeat(4, 1fr); }
+.form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 500; }
+.form-grid label.check { flex-direction: row; align-items: center; gap: 6px; padding-bottom: 10px; }
+.form-grid .span2 { grid-column: span 2; }
+.form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+input, select { font: inherit; color: var(--text); padding: 8px 10px; border: 1px solid #cfd5e1; border-radius: 8px; background: #fff; min-width: 0; }
+input:focus, select:focus { outline: 2px solid #1f386433; border-color: var(--navy); }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.filters select, .filters input { padding: 6px 10px; font-size: 13px; }
+
+.pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #eceff4; color: var(--muted); }
+.pill.PDC { background: #e3ecf9; color: var(--navy); }
+.pill.Terceros { background: #fdeee6; color: #a1441a; }
+.pill.ok { background: var(--ok-bg); color: var(--ok); }
+.pill.off { background: #eceff4; color: var(--muted); }
+
+/* ---------- KPIs ---------- */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.kpi { background: #fff; border-radius: var(--radius); padding: 18px 20px; box-shadow: 0 1px 2px #0000000d, 0 0 0 1px var(--line); display: flex; gap: 16px; align-items: flex-start; }
+.kpi .kico { width: 48px; height: 48px; border-radius: 10px; display: grid; place-items: center; flex: none; }
+.kpi .kico svg { width: 22px; height: 22px; }
+.kico.blue { background: #e7f0fc; color: #2a78d6; } .kico.green { background: #e5f5ec; color: #1e9e57; }
+.kico.amber { background: #fff4e0; color: #b26a00; } .kico.violet { background: #f1ecfd; color: #6d4bd8; } .kico.red { background: #fdecec; color: #c62828; }
+.kpi .val { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.kpi .lbl { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.kpi .meta { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+/* ---------- Alertas ---------- */
+.alerts { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.alerts li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; border-radius: 8px; font-size: 13px; }
+.alerts li.critical { background: var(--bad-bg); color: #8e1c1c; }
+.alerts li.warning { background: var(--warn-bg); color: #7a4800; }
+.alerts li.info { background: #eef1f6; color: var(--text); }
+.alerts .ico { font-weight: 700; width: 16px; text-align: center; flex: none; }
+.alerts .tag { font-weight: 600; margin-right: 4px; }
+.no-alerts { font-size: 13px; color: var(--ok); background: var(--ok-bg); padding: 8px 12px; border-radius: 8px; }
+
+/* ---------- Tables ---------- */
+.table-wrap { overflow: auto; max-height: 72vh; border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: separate; border-spacing: 0; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; white-space: nowrap; border-bottom: 1px solid var(--line); }
+thead th { position: sticky; top: 0; background: var(--navy); color: #fff; font-weight: 600; font-size: 12px; z-index: 2; text-align: left; }
+thead th.num { text-align: right; }
+.num { text-align: right; }
+.grid td { font-size: 13px; }
+.grid tbody tr:hover td { background: #f7f9fc; }
+.grid tr.sub td { background: #eef1f6; font-weight: 600; }
+.grid tr.tot td { background: var(--navy); color: #fff; font-weight: 700; }
+.grid tr.grp td { background: #f5f7fb; font-weight: 600; color: var(--navy); }
+.grid .neg { color: var(--bad); font-weight: 600; }
+.grid td.zero { color: #a3aab8; }
+.grid input { padding: 5px 8px; font-size: 13px; width: 130px; text-align: right; }
+.grid input.obs { width: 200px; text-align: left; }
+.grid input.bad { border-color: var(--bad); background: var(--bad-bg); }
+.grid input.changed { border-color: var(--series-1); background: #eef5fd; }
+.grid .first { position: sticky; left: 0; background: inherit; z-index: 1; }
+.grid thead th.first { z-index: 3; background: var(--navy); }
+.grid tbody tr { background: #fff; }
+.empty { text-align: center; color: var(--muted); padding: 30px; }
+.foto-cell { display: flex; align-items: center; gap: 8px; }
+.thumb { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; background: #eef1f6; border: 1px solid var(--line); cursor: zoom-in; display: block; }
+.thumb.ph { display: grid; place-items: center; color: var(--muted); font-size: 18px; cursor: default; }
+.btn-foto { display: inline-flex; align-items: center; gap: 6px; border: 1px dashed #9fb0cc; background: #f5f8fd; color: var(--navy); border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+.btn-foto.req { border-color: var(--bad); color: var(--bad); background: var(--bad-bg); }
+.btn-foto.ok { border-style: solid; border-color: #bfe3cc; background: var(--ok-bg); color: var(--ok); }
+.fotos-rec { display: grid; gap: 14px; }
+.foto-par { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 12px; break-inside: avoid; }
+.foto-par h4 { grid-column: 1 / -1; margin: 0; font-size: 13px; }
+.foto-par figure { margin: 0; }
+.foto-par img { width: 100%; height: 220px; object-fit: contain; background: #f3f5f9; border-radius: 6px; display: block; }
+.foto-par figcaption { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.foto-par .nofoto { height: 220px; display: grid; place-items: center; background: #f3f5f9; border-radius: 6px; color: var(--muted); font-size: 12.5px; text-align: center; padding: 10px; }
+.estado-mes { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 13.5px; }
+.estado-mes.abierto { background: var(--ok-bg); color: #13643a; }
+.estado-mes.cerrado { background: var(--warn-bg); color: #6b4100; }
+.estado-mes.ninguno { background: var(--bad-bg); color: #8e1c1c; }
+.estado-mes b { font-size: 15px; }
+.estado-mes .ico { font-size: 18px; }
+.pill.ABIERTO { background: var(--ok-bg); color: var(--ok); }
+.pill.CERRADO { background: #eceff4; color: var(--muted); }
+.mes-abierto-card { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.mes-abierto-card .big { font-size: 26px; font-weight: 700; color: var(--navy); text-transform: capitalize; }
+.visor { position: fixed; inset: 0; background: #000c; display: grid; place-items: center; z-index: 90; padding: 20px; cursor: zoom-out; }
+.visor img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+details > summary { cursor: pointer; font-weight: 600; color: var(--navy); margin-bottom: 10px; }
+
+/* ---------- Charts ---------- */
+.chart { position: relative; }
+.chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.chart text { font-family: inherit; }
+.legend { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 3px; border-radius: 2px; display: inline-block; }
+.tip { position: fixed; pointer-events: none; background: #1c2433; color: #fff; font-size: 12px; padding: 8px 10px; border-radius: 8px; z-index: 70; box-shadow: 0 6px 20px #0003; min-width: 140px; }
+.tip b { display: block; margin-bottom: 4px; }
+.tip .row { display: flex; justify-content: space-between; gap: 14px; font-variant-numeric: tabular-nums; }
+.tip .sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+
+/* ---------- Recibo tercero ---------- */
+.recibo { max-width: 820px; margin: 0 auto; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 28px 32px; }
+.recibo .rhead { display: flex; justify-content: space-between; gap: 20px; border-bottom: 3px solid var(--navy); padding-bottom: 14px; margin-bottom: 18px; }
+.recibo .rhead h2 { font-size: 20px; color: var(--navy); }
+.recibo .rmeta { display: grid; grid-template-columns: 170px 1fr; gap: 4px 12px; font-size: 13px; margin-bottom: 18px; }
+.recibo .rmeta b { color: var(--muted); font-weight: 500; }
+.recibo h3 { color: var(--navy); margin: 18px 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+.recibo table th { background: #eef1f6; color: var(--text); position: static; }
+.recibo .total { display: flex; justify-content: flex-end; gap: 24px; font-size: 18px; font-weight: 700; padding: 12px 10px; background: #eef1f6; border-radius: 8px; margin-top: 10px; }
+
+/* ---------- Login / loader / toast ---------- */
+.login { position: fixed; inset: 0; background: var(--navy); display: grid; place-items: center; z-index: 80; padding: 16px; }
+.login form { background: #fff; border-radius: 14px; padding: 28px; width: 100%; max-width: 360px; display: grid; gap: 12px; }
+.login h1 { font-size: 20px; color: var(--navy); }
+.login label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 500; }
+.login .err { color: var(--bad); font-size: 13px; min-height: 18px; }
+.loader { position: fixed; inset: 0; background: #ffffff99; display: grid; place-items: center; z-index: 50; }
+.spinner { width: 38px; height: 38px; border-radius: 50%; border: 4px solid #d5dbe8; border-top-color: var(--navy); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #1c2433; color: #fff; padding: 10px 18px; border-radius: 10px; z-index: 60; font-size: 13px; box-shadow: 0 6px 20px #0003; max-width: 90vw; }
+.toast.err { background: var(--bad); }
+
+@media (max-width: 900px) {
+  .side { position: fixed; left: 0; top: 0; transform: translateX(-100%); transition: transform .2s; box-shadow: 6px 0 24px #0005; }
+  body.side-open .side { transform: none; }
+  body.side-open .scrim { display: block; position: fixed; inset: 0; background: #0006; z-index: 15; }
+  .burger { display: inline-flex; }
+  .header { padding: 12px 16px; }
+}
+@media (max-width: 700px) {
+  #tblLec thead { display: none; }
+  #tblLec, #tblLec tbody { display: block; }
+  #tblLec tr { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 12px; border-bottom: 1px solid var(--line); }
+  #tblLec tr.grp { display: block; padding: 0; }
+  #tblLec td { border: 0; padding: 0; white-space: normal; text-align: left; }
+  #tblLec td[data-l]::before { content: attr(data-l); display: block; font-size: 11px; color: var(--muted); font-weight: 500; }
+  #tblLec td.c-med { grid-column: 1 / -1; font-weight: 600; font-size: 15px; position: static; }
+  #tblLec td.c-foto, #tblLec td.c-obs { grid-column: 1 / -1; }
+  #tblLec input { width: 100%; text-align: left; font-size: 16px; }
+  #tblLec .thumb { width: 64px; height: 64px; }
+  #btnSaveLec { position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 12; padding: 14px; font-size: 15px; box-shadow: 0 6px 20px #0003; }
+  #view-lecturas .card { margin-bottom: 70px; }
+}
+@media (max-width: 1000px) {
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+  .two { grid-template-columns: 1fr; }
+  .form-grid, .form-grid.four { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  main { padding: 16px; }
+  .kpis { grid-template-columns: 1fr; }
+  .form-grid, .form-grid.four { grid-template-columns: 1fr; }
+  .form-grid .span2 { grid-column: auto; }
+  .recibo { padding: 18px; }
+  .recibo .rhead { flex-direction: column; }
+  .recibo .rmeta { grid-template-columns: 1fr; }
+}
+@media print {
+  body { background: #fff; }
+  .side, .header, .no-print, .toast, .loader, .scrim { display: none !important; }
+  main { padding: 0; }
+  .view:not(#view-recibo) { display: none !important; }
+  #view-recibo { display: block !important; }
+  .recibo { border: 0; padding: 0; max-width: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div class="login" id="login">
+  <form id="loginForm" autocomplete="on">
+    <div class="brand">
+      <div class="logo" style="background:var(--navy)"><svg width="22" height="22" viewBox="0 0 32 32"><path d="M18 2 6 18h8l-2 12 13-17h-8z" fill="#ffd54a"/></svg></div>
+      <div><h1>Portal Energía</h1><p class="sub" style="color:var(--muted);opacity:1">Packing del Carmen SAC</p></div>
+    </div>
+    <label>Usuario <input id="lgUser" autocomplete="username" required></label>
+    <label>Contraseña <input id="lgPass" type="password" autocomplete="current-password" required></label>
+    <div class="err" id="lgErr"></div>
+    <button class="btn primary" id="lgBtn">Ingresar</button>
+  </form>
+</div>
+
+<div class="layout">
+<aside class="side" id="side">
+  <div class="side-brand">
+    <div class="logo"><svg width="24" height="24" viewBox="0 0 32 32"><path d="M18 2 6 18h8l-2 12 13-17h-8z" fill="#1f3864"/></svg></div>
+    <div><b>Packing del Carmen</b><small>Portal Energía</small></div>
+    <button class="burger" id="btnSideClose" title="Cerrar menú"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  </div>
+  <div class="side-user">
+    <div class="row"><div class="avatar" id="avatar">·</div><div><b id="whoName"></b><small id="whoRol"></small></div></div>
+    <button class="side-logout" id="btnLogout"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Cerrar sesión</button>
+  </div>
+  <nav class="side-nav" id="tabs">
+    <div class="nav-group open">
+      <button class="nav-head" data-toggle><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>Energía<svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 6 6 6-6 6"/></svg></button>
+      <div class="nav-items">
+        <button data-view="resumen" data-roles="ADMIN,USUARIO" class="active">Resumen del mes</button>
+        <button data-view="historico" data-roles="ADMIN,USUARIO">Histórico</button>
+        <button data-view="lecturas" data-roles="ADMIN,USUARIO,LECTOR">Registro de lecturas</button>
+        <button data-view="recibos" data-roles="ADMIN,USUARIO">Recibos ELD y precio</button>
+        <button data-view="recibo" data-roles="ADMIN,USUARIO">Recibo a terceros</button>
+      </div>
+    </div>
+    <div class="nav-group" data-roles="ADMIN">
+      <div class="nav-sep"></div>
+      <button class="nav-head" data-toggle><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Administración<svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 6 6 6-6 6"/></svg></button>
+      <div class="nav-items">
+        <button data-view="periodos" data-roles="ADMIN">Apertura de mes</button>
+        <button data-view="medidores" data-roles="ADMIN">Medidores</button>
+        <button data-view="usuarios" data-roles="ADMIN">Usuarios</button>
+      </div>
+    </div>
+  </nav>
+</aside>
+<div class="scrim" id="scrim"></div>
+<div class="content">
+<header class="header">
+  <button class="burger" id="btnSide" title="Menú"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <div class="crumb">Energía <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 6 6 6-6 6"/></svg> <b id="crumb">Resumen del mes</b></div>
+  <div class="head-actions">
+    <label class="mes-sel" id="mesWrap">Mes <select id="mesSel"></select></label>
+    <span class="badge" id="conn">Conectando…</span>
+    <button class="btn ghost sm" id="btnReload" title="Volver a leer los datos">↻ Actualizar</button>
+  </div>
+</header>
+
+<main>
+  <!-- ============ RESUMEN ============ -->
+  <section class="view active" id="view-resumen">
+    <div class="kpis" id="kpis"></div>
+    <div class="card">
+      <div class="card-head"><h2>Alertas del mes</h2></div>
+      <div id="alertas"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2>Distribución por grupo <small id="distSub"></small></h2>
+      </div>
+      <div class="table-wrap"><table class="grid" id="tblDist"></table></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Facturación real por grupo <small>S/ · energía + petróleo repartido según consumo neto</small></h2></div>
+      <div class="chart" id="chDist"></div>
+    </div>
+    <div class="card">
+      <details>
+        <summary>Detalle por medidor</summary>
+        <div class="table-wrap"><table class="grid" id="tblDet"></table></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============ HISTÓRICO ============ -->
+  <section class="view" id="view-historico">
+    <div class="two" style="margin-bottom:18px">
+      <div class="card">
+        <div class="card-head"><h2>Recibo ELD vs consumo medido <small>kWh</small></h2></div>
+        <div class="chart" id="chKwh"></div>
+        <p class="hint" style="margin:8px 0 0">"Medido" suma el consumo neto de los medidores con lectura. Si faltan lecturas de los tableros de PDC en un mes, ese mes sale muy por debajo del recibo.</p>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Precio real vs proyectado <small>S/ por kWh</small></h2></div>
+        <div class="chart" id="chPrecio"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2>Histórico por grupo</h2>
+        <div class="filters">
+          <select id="hisMetric">
+            <option value="facturacionReal">Facturación real (S/)</option>
+            <option value="facturacionProyectada">Facturación proyectada (S/)</option>
+            <option value="consumoNeto">Consumo neto (kWh)</option>
+            <option value="consumoReal">Consumo real (kWh)</option>
+          </select>
+          <label class="hint" style="margin:0;display:flex;gap:6px;align-items:center"><input type="checkbox" id="hisConRecibo" checked> Solo meses con recibo</label>
+        </div>
+      </div>
+      <div class="table-wrap"><table class="grid" id="tblHis"></table></div>
+    </div>
+  </section>
+
+  <!-- ============ LECTURAS ============ -->
+  <section class="view" id="view-lecturas">
+    <div class="card">
+      <div class="card-head">
+        <h2>Registro de lecturas <small id="lecSub"></small></h2>
+        <div class="filters">
+          <label class="hint" style="margin:0" data-roles="ADMIN,USUARIO">Mes</label>
+          <input type="month" id="lecMes" data-roles="ADMIN,USUARIO">
+          <button class="btn primary" id="btnSaveLec">Guardar lecturas</button>
+        </div>
+      </div>
+      <div id="lecEstado"></div>
+      <p class="hint">Por cada medidor: escribe la <b>lectura actual</b> y toma la <b>foto del medidor</b> (obligatoria; en el celular abre la cámara). La lectura anterior se toma sola del mes anterior y el consumo se calcula al instante: (actual − anterior) × factor. En rojo: lecturas menores a la anterior o sin foto.<span data-roles="ADMIN,USUARIO"> Usa <b>Lect. anterior manual</b> solo si cambió el medidor.</span></p>
+      <input type="file" id="fotoInput" accept="image/*" capture="environment" hidden>
+      <div class="table-wrap"><table class="grid" id="tblLec"></table></div>
+    </div>
+  </section>
+
+  <!-- ============ RECIBOS ============ -->
+  <section class="view" id="view-recibos">
+    <div class="two" style="margin-bottom:18px">
+      <div class="card">
+        <h2 style="margin-bottom:12px">Recibo ELD del mes</h2>
+        <form class="form-grid four" id="frmRec">
+          <label>Mes <input type="month" name="mes" required></label>
+          <label>Energía facturada (S/) <input type="number" step="0.01" name="energiaSoles" required></label>
+          <label>Energía consumida (kWh) <input type="number" step="0.001" name="energiaKwh" required></label>
+          <label>Petróleo (S/) <input type="number" step="0.01" name="petroleoSoles" value="0"></label>
+          <label>Petróleo (gln) <input type="number" step="0.01" name="petroleoGln" value="0"></label>
+          <label class="span2">Observación <input name="observacion"></label>
+          <div class="form-actions"><button class="btn primary">Guardar recibo</button></div>
+        </form>
+      </div>
+      <div class="card">
+        <h2 style="margin-bottom:12px">S/kWh proyectado</h2>
+        <form class="form-grid four" id="frmPre">
+          <label>Mes <input type="month" name="mes" required></label>
+          <label>S/kWh proyectado <input type="number" step="0.0001" name="precioKwh" required></label>
+          <label class="span2">Observación <input name="observacion"></label>
+          <div class="form-actions span2">
+            <button class="btn primary">Guardar precio</button>
+            <button type="button" class="btn ghost" id="btnUsarReal">Usar real del mes anterior</button>
+          </div>
+        </form>
+        <p class="hint" id="preHint" style="margin:12px 0 0"></p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Recibos y precios por mes</h2></div>
+      <div class="table-wrap"><table class="grid" id="tblRec"></table></div>
+    </div>
+  </section>
+
+  <!-- ============ RECIBO A TERCEROS ============ -->
+  <section class="view" id="view-recibo">
+    <div class="card no-print">
+      <div class="card-head">
+        <h2>Recibo a terceros</h2>
+        <div class="filters">
+          <select id="recGrupo"></select>
+          <button class="btn primary" id="btnPrint">Imprimir / PDF</button>
+        </div>
+      </div>
+      <p class="hint" style="margin:0">Usa el mes de la barra superior. El importe es la facturación real del grupo (recibo ELD + petróleo repartido por consumo neto).</p>
+    </div>
+    <div id="reciboOut"></div>
+  </section>
+
+  <!-- ============ APERTURA DE MES ============ -->
+  <section class="view" id="view-periodos">
+    <div class="card">
+      <div class="card-head"><h2>Mes abierto para registrar lecturas</h2></div>
+      <div id="perActual"></div>
+      <p class="hint" style="margin:14px 0 0">Los lectores solo pueden registrar lecturas y subir fotos en el mes abierto. Al abrir un mes, el que estaba abierto se cierra automáticamente. Un mes cerrado queda bloqueado para todos hasta que lo vuelvas a abrir.</p>
+    </div>
+    <div class="card">
+      <h2 style="margin-bottom:12px">Abrir un mes</h2>
+      <form class="form-grid" id="frmPer">
+        <label>Mes <input type="month" name="mes" required></label>
+        <label class="span2">Observación <input name="observacion" placeholder="Ej. Lecturas de cierre de octubre"></label>
+        <div class="form-actions span2"><button class="btn primary">Abrir mes</button></div>
+      </form>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Historial de periodos</h2></div>
+      <div class="table-wrap"><table class="grid" id="tblPer"></table></div>
+    </div>
+  </section>
+
+  <!-- ============ MEDIDORES ============ -->
+  <section class="view" id="view-medidores">
+    <div class="card">
+      <h2 style="margin-bottom:12px">Medidor <small id="medModo">nuevo</small></h2>
+      <form class="form-grid" id="frmMed">
+        <label class="span2">Medidor (nombre único) <input name="medidor" required></label>
+        <label>Categoría <select name="categoria"><option>PDC</option><option>Terceros</option></select></label>
+        <label>Grupo comercial <input name="grupo" list="dlGrupos" required></label>
+        <label>Serie / tablero <input name="serie"></label>
+        <label>Factor corrección <input type="number" step="any" name="factor" value="1"></label>
+        <label class="span2">Se descuenta (mes anterior) de <select name="relacionadoA"></select></label>
+        <label class="span2">Se descuenta (mismo mes) de <select name="descuentaDe"></select></label>
+        <label>Orden <input type="number" name="orden"></label>
+        <label class="check"><input type="checkbox" name="activo" checked> Activo</label>
+        <div class="form-actions span2">
+          <button class="btn primary">Guardar medidor</button>
+          <button type="button" class="btn ghost" id="btnMedNuevo">Nuevo</button>
+        </div>
+      </form>
+      <datalist id="dlGrupos"></datalist>
+      <p class="hint" style="margin:12px 0 0">El nombre del medidor es su identificador: para "renombrar" uno, desactívalo y crea otro. Grupo <code>Sub Estación</code> = no entra al reparto.</p>
+    </div>
+    <div class="card">
+      <div class="table-wrap"><table class="grid" id="tblMed"></table></div>
+    </div>
+  </section>
+
+  <!-- ============ USUARIOS ============ -->
+  <section class="view" id="view-usuarios">
+    <div class="card">
+      <h2 style="margin-bottom:12px">Nuevo usuario</h2>
+      <form class="form-grid" id="frmUsr">
+        <label>Usuario <input name="usuario" required></label>
+        <label class="span2">Nombre <input name="nombre"></label>
+        <label>Rol <select name="rol"><option value="LECTOR">Lector (solo lecturas)</option><option value="USUARIO">Usuario</option><option value="ADMIN">Administrador</option></select></label>
+        <label>Contraseña <input type="password" name="password" required minlength="6"></label>
+        <div class="form-actions"><button class="btn primary">Crear usuario</button></div>
+      </form>
+    </div>
+    <div class="card">
+      <div class="table-wrap"><table class="grid" id="tblUsr"></table></div>
+    </div>
+  </section>
+</main>
+</div>
+</div>
+
+<div class="loader" id="loader" hidden><div class="spinner"></div></div>
+<div class="toast" id="toast" hidden></div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+// ===================================================================================
+// CONFIGURACIÓN — TOKEN debe ser IGUAL a la constante TOKEN de Code.gs
+// ===================================================================================
+const CFG = {
+  API_URL: 'https://script.google.com/macros/s/AKfycbzjYn1dzDb5yALtTaw9PLJIhI23RYSQDcoWVkfLAZAprKWFAA_HTtgj5wi-ihTj28d8mQ/exec',
+  TOKEN: '5790e9ce4b061d2d8097308704ef50a1ce9bfd00e9c86747',
+  LOCALE: 'es-PE'
+};
+
+// ===================================================================================
+// API (JSONP: Apps Script no permite CORS con fetch desde GitHub Pages)
+// ===================================================================================
+function jsonp(params, timeoutMs = 60000) {
+  return new Promise((resolve, reject) => {
+    const cb = '__pe_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    const s = document.createElement('script');
+    const t = setTimeout(() => { done(); reject(new Error('La API tardó demasiado en responder. Intenta de nuevo.')); }, timeoutMs);
+    function done() { clearTimeout(t); delete window[cb]; s.remove(); }
+    window[cb] = (data) => { done(); resolve(data); };
+    const q = new URLSearchParams(Object.assign({}, params, { token: CFG.TOKEN, sesion: (S.user && S.user.sesion) || '', callback: cb, _: Date.now() }));
+    s.src = CFG.API_URL + '?' + q.toString();
+    s.onerror = () => { done(); reject(new Error('No se pudo conectar con la API. Revisa la URL de la implementación y tu conexión.')); };
+    document.head.appendChild(s);
+  });
+}
+async function api(action, params = {}) {
+  const p = { action };
+  Object.entries(params).forEach(([k, v]) => { p[k] = (typeof v === 'object' && v !== null) ? JSON.stringify(v) : v; });
+  let lastErr;
+  for (let i = 0; i < 3; i++) {
+    try {
+      const r = await jsonp(p);
+      if (r && r.sesionExpirada) { cerrarSesionLocal(r.error); const e = new Error(r.error); e.resp = r; throw e; }
+      if (!r || r.ok === false) {
+        const e = new Error((r && (r.error || (r.errores || []).join(' · '))) || 'Error desconocido');
+        e.resp = r; throw e;
+      }
+      return r;
+    } catch (e) {
+      lastErr = e;
+      if (e.resp) throw e;                       // error real del servidor: no reintentar
+      await new Promise(res => setTimeout(res, 1200 * (i + 1)));
+    }
+  }
+  throw lastErr;
+}
+async function sha256(txt) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ===================================================================================
+// UTILIDADES
+// ===================================================================================
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nf = (d) => new Intl.NumberFormat(CFG.LOCALE, { minimumFractionDigits: d, maximumFractionDigits: d });
+const NF0 = nf(0), NF1 = nf(1), NF2 = nf(2), NF4 = nf(4);
+const fN = (v, d = 0) => (d === 0 ? NF0 : d === 1 ? NF1 : d === 2 ? NF2 : NF4).format(Number(v) || 0);
+const fS = (v, d = 2) => 'S/ ' + fN(v, d);
+const fP = (v, d = 1) => fN((Number(v) || 0) * 100, d) + '%';
+const num = (v) => { const n = Number(v); return isFinite(n) ? n : 0; };
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const MESES_L = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+function mesKey(v) { const m = String(v || '').match(/^(\d{4})-(\d{1,2})/); return m ? m[1] + '-' + m[2].padStart(2, '0') : ''; }
+function mesLbl(k) { const [y, m] = k.split('-'); return MESES[+m - 1] + '-' + y.slice(2); }
+function mesLargo(k) { const [y, m] = k.split('-'); return MESES_L[+m - 1] + ' ' + y; }
+function mesAnt(k) { let [y, m] = k.split('-').map(Number); m--; if (!m) { y--; m = 12; } return y + '-' + String(m).padStart(2, '0'); }
+function mesSig(k) { let [y, m] = k.split('-').map(Number); m++; if (m > 12) { y++; m = 1; } return y + '-' + String(m).padStart(2, '0'); }
+const isActivo = (v) => !(v === false || String(v).toLowerCase() === 'false');
+
+function toast(msg, err = false) {
+  const t = $('#toast'); t.textContent = msg; t.className = 'toast' + (err ? ' err' : ''); t.hidden = false;
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, err ? 7000 : 3500);
+}
+function loading(on) { $('#loader').hidden = !on; }
+async function run(fn, okMsg) {
+  loading(true);
+  try { const r = await fn(); if (okMsg) toast(okMsg); return r; }
+  catch (e) { toast(e.message || String(e), true); throw e; }
+  finally { loading(false); }
+}
+
+// Tooltip compartido por los gráficos
+const tip = $('#tip');
+function showTip(html, ev) {
+  tip.innerHTML = html; tip.hidden = false;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = ev.clientY - h - 14;
+  tip.style.left = x + 'px'; tip.style.top = y + 'px';
+}
+function hideTip() { tip.hidden = true; }
+
+// ===================================================================================
+// ESTADO
+// ===================================================================================
+const S = {
+  user: null,
+  db: { Medidores: [], Lecturas: [], Recibos: [], PrecioProyectado: [], Usuarios: [], Periodos: [] },
+  cuadre: { meses: [], detalle: [], resumen: [], porGrupo: [] },
+  mes: '',
+  view: 'resumen',
+};
+const isAdmin = () => S.user && S.user.rol === 'ADMIN';
+const isLector = () => S.user && S.user.rol === 'LECTOR';
+const API_VERSION_ESPERADA = '3.0';
+const SES_KEY = 'pe_user_v3';
+// Cualquier rol que no sea ADMIN o USUARIO se trata como LECTOR (el de menos permisos).
+const normRol = (r) => { const n = String(r || '').trim().toUpperCase(); return n === 'ADMIN' || n === 'USUARIO' ? n : 'LECTOR'; };
+function cerrarSesionLocal(msg) {
+  try { sessionStorage.removeItem(SES_KEY); } catch (e) {}
+  S.user = null;
+  $('#login').hidden = false; $('#lgErr').textContent = msg || '';
+}
+const ROL_TXT = { ADMIN: 'Administrador', USUARIO: 'Usuario', LECTOR: 'Lector (solo lecturas)' };
+const puede = (el) => !el.dataset.roles || (S.user && el.dataset.roles.split(',').includes(S.user.rol));
+
+async function cargar() {
+  // El lector solo necesita medidores y lecturas: no se pide el cuadre (más liviano).
+  const [all, cu] = await Promise.all([api('getAll'), isLector() ? Promise.resolve({ meses: [], detalle: [], resumen: [], porGrupo: [] }) : api('getCuadre')]);
+  const d = all.data || {};
+  // El rol lo confirma el servidor: si cambió (p. ej. el admin te hizo Lector), se aplica ya.
+  if (all.rol && normRol(all.rol) !== S.user.rol) { S.user.rol = normRol(all.rol); guardarSesion(); aplicarUsuario(); }
+  S.db = {
+    Medidores: (d.Medidores || []).sort((a, b) => num(a.orden) - num(b.orden)),
+    Lecturas: (d.Lecturas || []).map(r => ({ ...r, mes: mesKey(r.mes) })),
+    Recibos: (d.Recibos || []).map(r => ({ ...r, mes: mesKey(r.mes) })),
+    PrecioProyectado: (d.PrecioProyectado || []).map(r => ({ ...r, mes: mesKey(r.mes) })),
+    Usuarios: d.Usuarios || [],
+    Periodos: (d.Periodos || []).map(r => ({ ...r, mes: mesKey(r.mes), estado: String(r.estado || '').toUpperCase() })).sort((a, b) => b.mes.localeCompare(a.mes)),
+  };
+  S.cuadre = cu;
+  $('#conn').textContent = '● Google Sheets'; $('#conn').className = 'badge live';
+  armarSelectorMes();
+  render();
+}
+
+function armarSelectorMes() {
+  const set = new Set(S.cuadre.meses);
+  S.db.PrecioProyectado.forEach(p => p.mes && set.add(p.mes));
+  const meses = [...set].filter(Boolean).sort();
+  if (meses.length) set.add(mesSig(meses[meses.length - 1]));
+  const lista = [...set].filter(Boolean).sort().reverse();
+  if (!S.mes || !set.has(S.mes)) {
+    const conRec = S.cuadre.resumen.filter(r => r.kwhRecibo > 0).map(r => r.mes);
+    S.mes = conRec.length ? conRec[conRec.length - 1] : (lista[0] || '');
+  }
+  $('#mesSel').innerHTML = lista.map(m => `<option value="${m}" ${m === S.mes ? 'selected' : ''}>${mesLargo(m)}</option>`).join('');
+}
+
+function render() {
+  const v = S.view;
+  if (v === 'resumen') renderResumen();
+  if (v === 'historico') renderHistorico();
+  if (v === 'lecturas') renderLecturas();
+  if (v === 'recibos') renderRecibos();
+  if (v === 'recibo') renderReciboTercero();
+  if (v === 'medidores') renderMedidores();
+  if (v === 'periodos') renderPeriodos();
+  if (v === 'usuarios') renderUsuarios();
+}
+
+// ===================================================================================
+// RESUMEN DEL MES
+// ===================================================================================
+function renderResumen() {
+  const mes = S.mes;
+  const R = S.cuadre.resumen.find(r => r.mes === mes);
+  const grupos = S.cuadre.porGrupo.filter(g => g.mes === mes);
+  const det = S.cuadre.detalle.filter(d => d.mes === mes);
+
+  if (!R) {
+    $('#kpis').innerHTML = '';
+    $('#alertas').innerHTML = `<div class="empty">Aún no hay lecturas ni recibo para ${mesLargo(mes)}. Regístralos en "Registro de lecturas" y "Recibos ELD y precio".</div>`;
+    $('#tblDist').innerHTML = ''; $('#chDist').innerHTML = ''; $('#tblDet').innerHTML = ''; $('#distSub').textContent = '';
+    return;
+  }
+
+  const perdBad = R.kwhRecibo > 0 && (R.perdidaKwh < 0 || R.perdidaPct > 0.05);
+  const difPrecio = R.precioRealKwh - R.precioProyectadoKwh;
+  $('#kpis').innerHTML = `
+    <div class="kpi"><div class="kico blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 10v4M18 10v4"/></svg></div><div><div class="val">${fS(R.valorizadoTotal)}</div><div class="lbl">Facturado ELD + petróleo</div>
+      <div class="meta">Energía ${fS(R.solesEnergia)} · Petróleo ${fS(R.solesPetroleo)}</div></div></div>
+    <div class="kpi"><div class="kico violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div><div><div class="val">${fN(R.kwhRecibo)} kWh</div><div class="lbl">Consumo del recibo ELD</div>
+      <div class="meta">Medido en tableros: ${fN(R.consumoMedido)} kWh</div></div></div>
+    <div class="kpi"><div class="kico ${perdBad ? 'red' : 'green'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l6 6 4-4 8 8M21 11v6h-6"/></svg></div><div><div class="val">${R.kwhRecibo ? fN(R.perdidaKwh) + ' kWh' : '—'}</div><div class="lbl">Pérdida (recibo − medido)</div>
+      <div class="meta">${R.kwhRecibo ? fP(R.perdidaPct) + ' del recibo' + (R.perdidaKwh < 0 ? ' · se midió más de lo facturado' : '') : 'Falta el recibo del mes'}</div></div></div>
+    <div class="kpi"><div class="kico amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div><div><div class="val">${R.precioRealKwh ? fN(R.precioRealKwh, 4) : '—'}</div><div class="lbl">S/kWh real</div>
+      <div class="meta">Proyectado ${fN(R.precioProyectadoKwh, 4)}${R.precioRealKwh ? ' · diferencia ' + (difPrecio >= 0 ? '+' : '') + fN(difPrecio, 4) : ''}</div></div></div>`;
+
+  // Alertas
+  const al = R.alertas || [];
+  const sinLec = al.filter(a => a.tipo === 'SIN_LECTURA').map(a => a.medidor);
+  const otras = al.filter(a => a.tipo !== 'SIN_LECTURA');
+  const nivel = { NETO_NEGATIVO: ['critical', '!', 'Consumo neto negativo'], LECTURA_MENOR: ['critical', '!', 'Lectura menor'], SIN_RECIBO: ['warning', '▲', 'Sin recibo'], SIN_PRECIO: ['warning', '▲', 'Sin precio proyectado'] };
+  let html = otras.map(a => { const [c, i, t] = nivel[a.tipo] || ['info', 'i', a.tipo]; return `<li class="${c}"><span class="ico">${i}</span><span><span class="tag">${t}${a.medidor ? ' · ' + esc(a.medidor) : ''}:</span>${esc(a.mensaje)}</span></li>`; }).join('');
+  if (sinLec.length) html += `<li class="info"><span class="ico">i</span><span><span class="tag">Sin lectura (${sinLec.length}):</span>${sinLec.map(esc).join(', ')}</span></li>`;
+  $('#alertas').innerHTML = html ? `<ul class="alerts">${html}</ul>` : '<div class="no-alerts">✓ Sin alertas: todas las lecturas, el recibo y el precio están completos.</div>';
+
+  // Distribución por grupo
+  $('#distSub').textContent = '· ' + mesLargo(mes);
+  const cats = ['PDC', 'Terceros'];
+  const totalNeto = grupos.reduce((s, g) => s + g.consumoNeto, 0);
+  const row = (g, cls = '', lbl) => {
+    const dif = g.facturacionReal - g.facturacionProyectada;
+    const z = (v, d, f = fN) => `<td class="num ${Math.abs(v) < 1e-9 ? 'zero' : v < 0 ? 'neg' : ''}">${f(v, d)}</td>`;
+    return `<tr class="${cls}"><td>${lbl || (`<span class="pill ${g.categoria}">${esc(g.categoria)}</span> ` + esc(g.grupo))}</td>
+      ${z(g.consumoNeto, 1)}<td class="num">${totalNeto ? fP(g.consumoNeto / totalNeto, 2) : '—'}</td>${z(g.consumoReal, 1)}
+      ${z(g.facturacionProyectada, 2, fS)}${z(g.facturacionReal, 2, fS)}${z(dif, 2, fS)}</tr>`;
+  };
+  const suma = (arr) => arr.reduce((a, g) => ({ consumoNeto: a.consumoNeto + g.consumoNeto, consumoReal: a.consumoReal + g.consumoReal, facturacionProyectada: a.facturacionProyectada + g.facturacionProyectada, facturacionReal: a.facturacionReal + g.facturacionReal }), { consumoNeto: 0, consumoReal: 0, facturacionProyectada: 0, facturacionReal: 0 });
+  let body = '';
+  cats.forEach(c => {
+    const gs = grupos.filter(g => g.categoria === c).sort((a, b) => b.facturacionReal - a.facturacionReal);
+    if (!gs.length) return;
+    gs.forEach(g => body += row(g));
+    body += row(suma(gs), 'sub', 'Total ' + c);
+  });
+  body += row(suma(grupos), 'tot', 'Total general');
+  $('#tblDist').innerHTML = `<thead><tr><th>Grupo</th><th class="num">Consumo neto (kWh)</th><th class="num">% del total</th><th class="num">Consumo real (kWh)</th><th class="num">Fact. proyectada</th><th class="num">Fact. real</th><th class="num">Real − proyectada</th></tr></thead><tbody>${body}</tbody>`;
+
+  barrasH($('#chDist'), grupos.filter(g => Math.abs(g.facturacionReal) > 0.005).sort((a, b) => b.facturacionReal - a.facturacionReal)
+    .map(g => ({ label: g.grupo, value: g.facturacionReal, extra: `${fN(g.consumoNeto, 1)} kWh · ${totalNeto ? fP(g.consumoNeto / totalNeto, 2) : ''}` })), v => fS(v, 0));
+
+  // Detalle
+  $('#tblDet').innerHTML = `<thead><tr><th class="first">Medidor</th><th>Grupo</th><th class="num">Lectura</th><th class="num">Última lectura</th><th class="num">Factor</th><th class="num">Consumo</th><th class="num">Descuento</th><th class="num">Consumo neto</th><th class="num">S/kWh proy.</th><th class="num">Fact. proyectada</th><th class="num">Consumo x día</th><th class="num">%</th><th class="num">Consumo real</th><th class="num">Fact. real</th></tr></thead><tbody>` +
+    det.map(d => `<tr><td class="first">${esc(d.medidor)}</td><td><span class="pill ${d.categoria}">${esc(d.grupo)}</span></td>
+      <td class="num">${d.lectura === '' ? '<span class="zero">—</span>' : fN(d.lectura, 2)}</td><td class="num">${fN(d.ultimaLectura, 2)}</td><td class="num">${fN(d.factor, 0)}</td>
+      <td class="num">${fN(d.consumo, 1)}</td><td class="num">${d.descuento ? fN(d.descuento, 1) : '<span class="zero">0</span>'}</td>
+      <td class="num ${d.consumoNeto < 0 ? 'neg' : ''}">${fN(d.consumoNeto, 1)}</td><td class="num">${fN(d.precioKwh, 4)}</td><td class="num">${fS(d.facturacionProyectada)}</td>
+      <td class="num">${fN(d.consumoDia, 1)}</td><td class="num">${fP(d.porcentaje, 2)}</td><td class="num">${fN(d.consumoReal, 1)}</td><td class="num">${fS(d.facturacionReal)}</td></tr>`).join('') + '</tbody>';
+}
+
+// ===================================================================================
+// HISTÓRICO
+// ===================================================================================
+function renderHistorico() {
+  const res = S.cuadre.resumen.filter(r => r.kwhRecibo > 0);
+  lineas($('#chKwh'), res.map(r => mesLbl(r.mes)), [
+    { name: 'Recibo ELD', color: 'var(--series-1)', values: res.map(r => r.kwhRecibo) },
+    { name: 'Medido en tableros', color: 'var(--series-2)', values: res.map(r => r.consumoMedido) },
+  ], v => fN(v) + ' kWh', v => fN(v / 1000) + 'k');
+  const resP = S.cuadre.resumen.filter(r => r.kwhRecibo > 0 || r.precioProyectadoKwh > 0);
+  lineas($('#chPrecio'), resP.map(r => mesLbl(r.mes)), [
+    { name: 'Real (recibo + petróleo)', color: 'var(--series-1)', values: resP.map(r => r.precioRealKwh || null) },
+    { name: 'Proyectado', color: 'var(--series-2)', values: resP.map(r => r.precioProyectadoKwh || null) },
+  ], v => fN(v, 4), v => fN(v, 2));
+
+  const metric = $('#hisMetric').value;
+  const isS = metric.startsWith('fact');
+  const soloRec = $('#hisConRecibo').checked;
+  const conRec = new Set(res.map(r => r.mes));
+  const meses = S.cuadre.meses.filter(m => !soloRec || conRec.has(m));
+  const grupos = [];
+  const seen = {};
+  ['PDC', 'Terceros'].forEach(c => S.cuadre.porGrupo.filter(g => g.categoria === c).forEach(g => { if (!seen[g.grupo]) { seen[g.grupo] = c; grupos.push(g.grupo); } }));
+  const val = {};
+  S.cuadre.porGrupo.forEach(g => val[g.mes + '|' + g.grupo] = g[metric]);
+  const f = (v) => { const z = Math.abs(v) < 1e-9; return `<td class="num ${z ? 'zero' : v < 0 ? 'neg' : ''}">${z ? '-' : isS ? fN(v, 0) : fN(v, 0)}</td>`; };
+  const pdc = grupos.filter(g => seen[g] === 'PDC'), ter = grupos.filter(g => seen[g] === 'Terceros');
+  let head = `<tr><th class="first">Mes</th>${pdc.map(g => `<th class="num">${esc(g)}</th>`).join('')}<th class="num">Total PDC</th>${ter.map(g => `<th class="num">${esc(g)}</th>`).join('')}<th class="num">Total Terceros</th><th class="num">Total general</th></tr>`;
+  const tot = {};
+  let body = meses.map(m => {
+    let tp = 0, tt = 0;
+    const cP = pdc.map(g => { const v = val[m + '|' + g] || 0; tp += v; tot[g] = (tot[g] || 0) + v; return f(v); }).join('');
+    const cT = ter.map(g => { const v = val[m + '|' + g] || 0; tt += v; tot[g] = (tot[g] || 0) + v; return f(v); }).join('');
+    tot._p = (tot._p || 0) + tp; tot._t = (tot._t || 0) + tt;
+    return `<tr><td class="first">${mesLbl(m)}</td>${cP}<td class="num" style="font-weight:600">${fN(tp)}</td>${cT}<td class="num" style="font-weight:600">${fN(tt)}</td><td class="num" style="font-weight:700">${fN(tp + tt)}</td></tr>`;
+  }).join('');
+  body += `<tr class="tot"><td class="first">Total</td>${pdc.map(g => `<td class="num">${fN(tot[g] || 0)}</td>`).join('')}<td class="num">${fN(tot._p || 0)}</td>${ter.map(g => `<td class="num">${fN(tot[g] || 0)}</td>`).join('')}<td class="num">${fN(tot._t || 0)}</td><td class="num">${fN((tot._p || 0) + (tot._t || 0))}</td></tr>`;
+  $('#tblHis').innerHTML = `<thead>${head}</thead><tbody>${meses.length ? body : `<tr><td class="empty" colspan="99">Sin datos</td></tr>`}</tbody>`;
+}
+
+// ===================================================================================
+// REGISTRO DE LECTURAS
+// ===================================================================================
+function lecturaDe(mes, medidor) { return S.db.Lecturas.find(l => l.mes === mes && l.medidor === medidor); }
+function mesAbiertoActual() { const p = S.db.Periodos.find(x => x.estado === 'ABIERTO'); return p ? p.mes : ''; }
+function renderLecturas() {
+  const inp = $('#lecMes');
+  const abierto = mesAbiertoActual();
+  if (isLector()) inp.value = abierto;
+  else if (!inp.value) inp.value = abierto || S.mes;
+  const mes = mesKey(inp.value);
+  const editable = !!mes && mes === abierto;
+  const est = $('#lecEstado');
+  if (!abierto) est.innerHTML = `<div class="estado-mes ninguno"><span class="ico">🔒</span><span><b>No hay un mes abierto.</b> ${isLector() ? 'Pide al administrador que abra el mes para registrar las lecturas.' : 'Ábrelo en Administración › Apertura de mes.'}</span></div>`;
+  else if (editable) est.innerHTML = `<div class="estado-mes abierto"><span class="ico">✓</span><span>Mes abierto para registrar: <b>${mesLargo(abierto)}</b></span></div>`;
+  else est.innerHTML = `<div class="estado-mes cerrado"><span class="ico">🔒</span><span><b>${mesLargo(mes)} está cerrado</b> — solo consulta. Mes abierto: <b>${mesLargo(abierto)}</b>.</span></div>`;
+  $('#btnSaveLec').hidden = !editable;
+  if (isLector() && !abierto) { $('#tblLec').innerHTML = ''; $('#lecSub').textContent = ''; return; }
+  $('#lecSub').textContent = mes ? '· ' + mesLargo(mes) + ' (lectura anterior: ' + mesLargo(mesAnt(mes)) + ')' : '';
+  const meds = S.db.Medidores.filter(m => isActivo(m.activo));
+  const man = !isLector();
+  const conFoto = (m) => { const l = lecturaDe(mes, m.medidor); return l && l.fotoId; };
+  const hechas = meds.filter(m => { const l = lecturaDe(mes, m.medidor); return l && l.lectura !== '' && l.lectura !== undefined && l.fotoId; }).length;
+  $('#lecSub').textContent += ` · ${hechas} de ${meds.length} medidores con lectura y foto`;
+  let html = `<thead><tr><th class="first">Medidor</th><th>Grupo</th><th class="num">Factor</th><th class="num">Lectura anterior</th><th class="num">Lectura actual</th>${man ? '<th class="num">Lect. anterior manual</th>' : ''}<th class="num">Consumo (kWh)</th><th>Foto del medidor</th><th>Observación</th></tr></thead><tbody>`;
+  ['PDC', 'Terceros'].forEach(cat => {
+    const ms = meds.filter(m => m.categoria === cat);
+    if (!ms.length) return;
+    html += `<tr class="grp"><td class="first" colspan="9">${cat === 'PDC' ? 'Tableros de PDC' : 'Terceros'}</td></tr>`;
+    ms.forEach(m => {
+      const act = lecturaDe(mes, m.medidor) || {};
+      const ant = lecturaDe(mesAnt(mes), m.medidor) || {};
+      const antV = ant.lectura === '' || ant.lectura === undefined ? '' : num(ant.lectura);
+      html += `<tr data-med="${esc(m.medidor)}" data-factor="${num(m.factor) || 1}" data-ant="${antV}" data-foto="${esc(act.fotoId || '')}">
+        <td class="first c-med">${esc(m.medidor)}</td><td data-l="Grupo">${esc(m.grupo)}</td><td class="num" data-l="Factor">${fN(m.factor, 0)}</td>
+        <td class="num" data-l="Lectura anterior">${antV === '' ? '<span class="zero">sin lectura</span>' : fN(antV, 2)}</td>
+        <td class="num" data-l="Lectura actual"><input type="number" inputmode="decimal" step="any" data-f="lectura" value="${act.lectura ?? ''}" data-orig="${act.lectura ?? ''}"></td>
+        ${man ? `<td class="num" data-l="Lect. anterior manual"><input type="number" step="any" data-f="lecturaAnteriorManual" value="${act.lecturaAnteriorManual ?? ''}" data-orig="${act.lecturaAnteriorManual ?? ''}" placeholder="opcional"></td>` : ''}
+        <td class="num" data-l="Consumo (kWh)" data-out>—</td>
+        <td class="c-foto" data-l="Foto del medidor"><div class="foto-cell">${act.fotoId ? `<img class="thumb" data-foto-id="${esc(act.fotoId)}" alt="Foto ${esc(m.medidor)}">` : '<span class="thumb ph">📷</span>'}
+          <button type="button" class="btn-foto" data-subir>${act.fotoId ? 'Cambiar foto' : 'Tomar / subir foto'}</button></div></td>
+        <td class="c-obs" data-l="Observación"><input class="obs" data-f="observacion" value="${esc(act.observacion || '')}" data-orig="${esc(act.observacion || '')}"></td></tr>`;
+    });
+  });
+  $('#tblLec').innerHTML = html + '</tbody>';
+  $$('#tblLec tr[data-med]').forEach(calcFilaLectura);
+  $$('#tblLec img[data-foto-id]').forEach(img => cargarFoto(img, img.dataset.fotoId));
+  if (!editable) { $$('#tblLec input, #tblLec [data-subir]').forEach(el => el.disabled = true); $$('#tblLec [data-subir]').forEach(b => b.hidden = true); }
+}
+function mesActual() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function calcFilaLectura(tr) {
+  const factor = num(tr.dataset.factor) || 1;
+  const lecIn = $('input[data-f="lectura"]', tr), manIn = $('input[data-f="lecturaAnteriorManual"]', tr);
+  const ant = manIn && manIn.value !== '' ? num(manIn.value) : (tr.dataset.ant === '' ? null : num(tr.dataset.ant));
+  const out = $('[data-out]', tr);
+  $$('input[data-f]', tr).forEach(i => i.classList.toggle('changed', i.value !== i.dataset.orig));
+  const btn = $('[data-subir]', tr);
+  btn.classList.toggle('ok', !!tr.dataset.foto);
+  btn.classList.toggle('req', lecIn.value !== '' && !tr.dataset.foto);
+  if (lecIn.value === '') { out.innerHTML = '<span class="zero">—</span>'; lecIn.classList.remove('bad'); return; }
+  const act = num(lecIn.value);
+  if (ant === null) { out.innerHTML = '<span class="zero">sin anterior</span>'; return; }
+  const c = (act - ant) * factor;
+  lecIn.classList.toggle('bad', act < ant);
+  out.innerHTML = `<span class="${c < 0 ? 'neg' : ''}">${fN(c, 1)}</span>`;
+}
+
+// ---------- Fotos ----------
+// Se reduce la foto en el navegador (máx. 1600 px, JPEG) antes de enviarla: una foto de
+// celular de 4-8 MB queda en ~300 KB y sube rápido incluso con datos móviles.
+function comprimirFoto(file, max = 1600, q = 0.8) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      const dataUrl = c.toDataURL('image/jpeg', q);
+      resolve({ dataUrl, mime: 'image/jpeg', data: dataUrl.split(',')[1] });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('No se pudo leer la imagen. Intenta con otra foto.')); };
+    img.src = url;
+  });
+}
+// Apps Script no deja leer la respuesta de un POST desde otro dominio (CORS), así que la foto
+// se envía "a ciegas" (no-cors) con un uploadId, y luego se consulta su resultado por JSONP.
+async function subirFoto(file, mes, medidor) {
+  const f = await comprimirFoto(file);
+  const uploadId = Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  await fetch(CFG.API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'uploadFoto', token: CFG.TOKEN, sesion: S.user.sesion, uploadId, mes, medidor, mime: f.mime, data: f.data }) });
+  for (let i = 0; i < 30; i++) {
+    await new Promise(r => setTimeout(r, i < 3 ? 1200 : 2000));
+    const r = await jsonp({ action: 'getUpload', uploadId });
+    if (r && r.pendiente) continue;
+    if (r && r.ok && r.fotoId) return { fotoId: r.fotoId, dataUrl: f.dataUrl };
+    throw new Error((r && r.error) || 'No se pudo guardar la foto');
+  }
+  throw new Error('La foto tardó demasiado en subir. Revisa tu conexión e intenta de nuevo.');
+}
+const fotoCache = {};
+// Muestra una foto de Drive: primero la miniatura pública; si Drive no la deja ver, la pide a la API.
+function cargarFoto(img, id) {
+  if (!id) return;
+  img.dataset.fotoId = id;
+  if (fotoCache[id]) { img.src = fotoCache[id]; return; }
+  img.onerror = async () => {
+    img.onerror = null;
+    try { const r = await api('getFoto', { fotoId: id }); fotoCache[id] = r.dataUrl; img.src = r.dataUrl; } catch (e) { img.alt = 'No se pudo cargar la foto'; }
+  };
+  img.src = 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w1200';
+}
+function verFoto(src) {
+  const v = document.createElement('div'); v.className = 'visor'; v.innerHTML = `<img src="${src}" alt="Foto del medidor">`;
+  v.addEventListener('click', () => v.remove()); document.body.appendChild(v);
+}
+let filaFoto = null;
+async function alElegirFoto(file) {
+  const tr = filaFoto; filaFoto = null;
+  if (!tr || !file) return;
+  const mes = mesKey($('#lecMes').value);
+  const btn = $('[data-subir]', tr);
+  btn.disabled = true; btn.textContent = 'Subiendo…';
+  try {
+    const r = await subirFoto(file, mes, tr.dataset.med);
+    tr.dataset.foto = r.fotoId;
+    fotoCache[r.fotoId] = r.dataUrl;
+    $('.foto-cell', tr).firstElementChild.outerHTML = `<img class="thumb" src="${r.dataUrl}" data-foto-id="${esc(r.fotoId)}" alt="Foto">`;
+    const l = lecturaDe(mes, tr.dataset.med);
+    if (l) l.fotoId = r.fotoId; else S.db.Lecturas.push({ id: mes + '|' + tr.dataset.med, mes, medidor: tr.dataset.med, lectura: '', fotoId: r.fotoId });
+    btn.textContent = 'Cambiar foto';
+    toast('Foto de ' + tr.dataset.med + ' guardada');
+  } catch (e) {
+    btn.textContent = tr.dataset.foto ? 'Cambiar foto' : 'Tomar / subir foto';
+    toast(e.message, true);
+  } finally {
+    btn.disabled = false; calcFilaLectura(tr);
+  }
+}
+async function guardarLecturas() {
+  const mes = mesKey($('#lecMes').value);
+  if (!mes) return toast('Elige el mes', true);
+  const rows = [];
+  let negativos = 0;
+  const sinFoto = [];
+  $$('#tblLec tr[data-med]').forEach(tr => {
+    const ins = $$('input[data-f]', tr);
+    if (!ins.some(i => i.value !== i.dataset.orig)) return;
+    const g = (f) => { const i = $(`input[data-f="${f}"]`, tr); return i ? i.value : undefined; };
+    if ($('input[data-f="lectura"]', tr).classList.contains('bad')) negativos++;
+    if (g('lectura') !== '' && !tr.dataset.foto) sinFoto.push(tr.dataset.med);
+    rows.push({ mes, medidor: tr.dataset.med, lectura: g('lectura'), lecturaAnteriorManual: g('lecturaAnteriorManual'), observacion: g('observacion') });
+  });
+  if (!rows.length) return toast('No hay cambios por guardar');
+  if (sinFoto.length) return toast('Falta la foto de: ' + sinFoto.join(', ') + '. Cada lectura debe tener su foto.', true);
+  if (negativos && !confirm(`Hay ${negativos} lectura(s) menores a la anterior. ¿Guardar de todas formas?`)) return;
+  // En lotes de 10 para no exceder el largo de la URL (JSONP viaja por GET)
+  await run(async () => {
+    let n = 0, a = 0;
+    for (let i = 0; i < rows.length; i += 10) {
+      const r = await api('saveLecturas', { rows: rows.slice(i, i + 10), usuario: S.user.usuario });
+      n += r.nuevos; a += r.actualizados;
+    }
+    S.mes = mes;
+    await cargar();
+    return { n, a };
+  }).then(r => toast(`✓ ${r.n + r.a} lectura(s) guardada(s) para ${mesLargo(mes)}`)).catch(() => {});
+}
+
+// ===================================================================================
+// RECIBOS Y PRECIO PROYECTADO
+// ===================================================================================
+function renderRecibos() {
+  const fr = $('#frmRec'), fp = $('#frmPre');
+  if (!fr.mes.value) cargarFormRecibo(S.mes);
+  if (!fp.mes.value) cargarFormPrecio(S.mes);
+  actualizarHintPrecio();
+  const meses = [...new Set([...S.db.Recibos.map(r => r.mes), ...S.db.PrecioProyectado.map(p => p.mes)])].filter(Boolean).sort().reverse();
+  const res = Object.fromEntries(S.cuadre.resumen.map(r => [r.mes, r]));
+  $('#tblRec').innerHTML = `<thead><tr><th class="first">Mes</th><th class="num">Energía S/</th><th class="num">Energía kWh</th><th class="num">Petróleo S/</th><th class="num">Petróleo gln</th><th class="num">PU petróleo</th><th class="num">Valorizado total</th><th class="num">S/kWh real</th><th class="num">S/kWh proyectado</th><th class="num">Diferencia</th><th class="num">Consumo medido</th><th class="num">Pérdida kWh</th><th></th></tr></thead><tbody>` +
+    meses.map(m => {
+      const r = S.db.Recibos.find(x => x.mes === m), p = S.db.PrecioProyectado.find(x => x.mes === m), q = res[m] || {};
+      const real = r && num(r.energiaKwh) ? (num(r.energiaSoles) + num(r.petroleoSoles)) / num(r.energiaKwh) : 0;
+      const pr = p ? num(p.precioKwh) : 0;
+      const dif = real && pr ? real - pr : 0;
+      return `<tr><td class="first">${mesLbl(m)}</td>
+        <td class="num">${r ? fS(r.energiaSoles) : '<span class="zero">—</span>'}</td><td class="num">${r ? fN(r.energiaKwh) : '—'}</td>
+        <td class="num">${r ? fS(r.petroleoSoles) : '—'}</td><td class="num">${r ? fN(r.petroleoGln, 1) : '—'}</td>
+        <td class="num">${r && num(r.petroleoGln) ? fN(num(r.petroleoSoles) / num(r.petroleoGln), 2) : '—'}</td>
+        <td class="num">${r ? fS(num(r.energiaSoles) + num(r.petroleoSoles)) : '—'}</td>
+        <td class="num">${real ? fN(real, 4) : '—'}</td><td class="num">${pr ? fN(pr, 4) : '<span class="zero">—</span>'}</td>
+        <td class="num ${dif > 0 ? 'neg' : ''}">${dif ? (dif > 0 ? '+' : '') + fN(dif, 4) : '—'}</td>
+        <td class="num">${q.consumoMedido ? fN(q.consumoMedido) : '—'}</td>
+        <td class="num ${r && q.perdidaKwh < 0 ? 'neg' : ''}">${r ? fN(q.perdidaKwh || 0) : '—'}</td>
+        <td><button class="icon-btn" data-edit="${m}" title="Editar">✎</button></td></tr>`;
+    }).join('') + '</tbody>';
+}
+function cargarFormRecibo(mes) {
+  const f = $('#frmRec'); const r = S.db.Recibos.find(x => x.mes === mes) || {};
+  f.mes.value = mes; f.energiaSoles.value = r.energiaSoles ?? ''; f.energiaKwh.value = r.energiaKwh ?? '';
+  f.petroleoSoles.value = r.petroleoSoles ?? 0; f.petroleoGln.value = r.petroleoGln ?? 0; f.observacion.value = r.observacion || '';
+}
+function cargarFormPrecio(mes) {
+  const f = $('#frmPre'); const p = S.db.PrecioProyectado.find(x => x.mes === mes) || {};
+  f.mes.value = mes; f.precioKwh.value = p.precioKwh ?? ''; f.observacion.value = p.observacion || '';
+  actualizarHintPrecio();
+}
+function realDelMes(m) {
+  const r = S.db.Recibos.find(x => x.mes === m);
+  return r && num(r.energiaKwh) ? (num(r.energiaSoles) + num(r.petroleoSoles)) / num(r.energiaKwh) : 0;
+}
+function actualizarHintPrecio() {
+  const m = mesKey($('#frmPre').mes.value);
+  if (!m) { $('#preHint').textContent = ''; return; }
+  const ant = mesAnt(m), real = realDelMes(ant);
+  $('#preHint').innerHTML = real ? `S/kWh real de ${mesLargo(ant)}: <b>${fN(real, 4)}</b>.` : `No hay recibo de ${mesLargo(ant)} para sugerir un precio.`;
+}
+
+// ===================================================================================
+// RECIBO A TERCEROS
+// ===================================================================================
+async function renderReciboTercero() {
+  const sel = $('#recGrupo');
+  const grupos = [...new Set(S.db.Medidores.filter(m => m.categoria === 'Terceros' && isActivo(m.activo)).map(m => m.grupo))];
+  if (!sel.options.length || sel.options.length !== grupos.length) {
+    const cur = sel.value;
+    sel.innerHTML = grupos.map(g => `<option ${g === cur ? 'selected' : ''}>${esc(g)}</option>`).join('');
+  }
+  const grupo = sel.value;
+  const out = $('#reciboOut');
+  if (!grupo) { out.innerHTML = '<div class="card empty">No hay terceros registrados.</div>'; return; }
+  out.innerHTML = '<div class="card empty">Cargando recibo…</div>';
+  let r;
+  try { r = await api('getReciboTercero', { mes: S.mes, grupo }); }
+  catch (e) { out.innerHTML = `<div class="card empty">${esc(e.message)}</div>`; return; }
+  const rec = S.db.Recibos.find(x => x.mes === S.mes);
+  const lineasRec = r.lineas.some(l => l.lecturaActual !== '') ? r.lineas.filter(l => l.lecturaActual !== '' || l.consumoKwh) : r.lineas;
+  const maxH = Math.max(...r.historico.map(h => h.consumoKwh), 1);
+  out.innerHTML = `<div class="recibo">
+    <div class="rhead">
+      <div><h2>Recibo de consumo de energía</h2><div class="sub" style="color:var(--muted);opacity:1">Packing del Carmen S.A.C.</div></div>
+      <div style="text-align:right"><div class="sub" style="color:var(--muted);opacity:1">Total a pagar</div><div style="font-size:24px;font-weight:700;color:var(--navy)">${fS(r.totalPagar)}</div></div>
+    </div>
+    <div class="rmeta">
+      <b>Empresa</b><span>${esc(r.grupo)}</span>
+      <b>Periodo de facturación</b><span>${mesLargo(r.mes)}</span>
+      <b>Lectura anterior</b><span>cierre de ${mesLargo(r.periodoConsumo.desde)}</span>
+      <b>Lectura actual</b><span>cierre de ${mesLargo(r.periodoConsumo.hasta)}</span>
+      <b>Emitido</b><span>${new Date().toLocaleDateString(CFG.LOCALE)}</span>
+    </div>
+    <h3>Lectura de medidores</h3>
+    <table class="grid"><thead><tr><th>Medidor</th><th>Serie</th><th class="num">Lect. anterior</th><th class="num">Lect. actual</th><th class="num">Factor</th><th class="num">Consumo kWh</th></tr></thead><tbody>
+      ${lineasRec.map(l => `<tr><td>${esc(l.medidor)}</td><td>${esc(l.serie)}</td><td class="num">${fN(l.lecturaAnterior, 2)}</td><td class="num">${l.lecturaActual === '' ? '—' : fN(l.lecturaActual, 2)}</td><td class="num">${fN(l.factor, 0)}</td><td class="num">${fN(l.consumoKwh, 1)}</td></tr>`).join('')}
+    </tbody></table>
+    <h3>Concepto de facturación</h3>
+    <table class="grid"><thead><tr><th>Descripción</th><th class="num">kWh</th><th class="num">S/ por kWh</th><th class="num">Importe</th></tr></thead><tbody>
+      <tr><td>Energía activa</td><td class="num">${fN(r.totalKwh, 1)}</td><td class="num">${fN(r.precioKwh, 4)}</td><td class="num">${fS(r.totalPagar)}</td></tr>
+    </tbody></table>
+    <div class="total"><span>Total a pagar</span><span>${fS(r.totalPagar)}</span></div>
+    ${rec ? '' : '<p class="hint" style="margin-top:10px">⚠ Aún no se registra el recibo ELD de este mes: el importe saldrá en 0 hasta registrarlo.</p>'}
+    <h3>Fotos de los medidores</h3>
+    <div class="fotos-rec">${lineasRec.map(l => `<div class="foto-par"><h4>${esc(l.medidor)}${l.serie ? ' · ' + esc(l.serie) : ''}</h4>
+      <figure>${l.fotoAnteriorId ? `<img data-rfoto="${esc(l.fotoAnteriorId)}" alt="Lectura anterior">` : '<div class="nofoto">Sin foto registrada</div>'}<figcaption>Lectura anterior · ${mesLargo(r.periodoConsumo.desde)} · ${fN(l.lecturaAnterior, 2)}</figcaption></figure>
+      <figure>${l.fotoActualId ? `<img data-rfoto="${esc(l.fotoActualId)}" alt="Lectura actual">` : '<div class="nofoto">Sin foto registrada</div>'}<figcaption>Lectura actual · ${mesLargo(r.periodoConsumo.hasta)} · ${l.lecturaActual === '' ? '—' : fN(l.lecturaActual, 2)}</figcaption></figure>
+    </div>`).join('')}</div>
+    <h3>Consumo de los últimos 12 meses (kWh)</h3>
+    <div class="chart" id="chRecHist"></div>
+  </div>`;
+  $$('#reciboOut img[data-rfoto]').forEach(img => cargarFoto(img, img.dataset.rfoto));
+  columnas($('#chRecHist'), r.historico.map(h => ({ label: mesLbl(h.mes), value: h.consumoKwh, extra: fS(h.importe) })), v => fN(v, 0) + ' kWh', maxH);
+}
+
+// ===================================================================================
+// APERTURA DE MES (ADMIN)
+// ===================================================================================
+function renderPeriodos() {
+  const ab = S.db.Periodos.find(p => p.estado === 'ABIERTO');
+  const f = $('#frmPer');
+  if (!f.mes.value) f.mes.value = ab ? mesSig(ab.mes) : mesActual();
+  $('#perActual').innerHTML = ab
+    ? `<div class="mes-abierto-card"><span class="pill ABIERTO">ABIERTO</span><span class="big">${mesLargo(ab.mes)}</span>
+        <span class="hint" style="margin:0">Abierto por ${esc(ab.abiertoPor || '—')} el ${esc(fechaHora(ab.fechaApertura))}</span>
+        <button class="btn ghost" data-cerrar="${ab.mes}">🔒 Cerrar ${mesLargo(ab.mes)}</button></div>`
+    : `<div class="estado-mes ninguno" style="margin:0"><span class="ico">🔒</span><span><b>No hay ningún mes abierto.</b> Los lectores no pueden registrar hasta que abras uno.</span></div>`;
+  $('#tblPer').innerHTML = `<thead><tr><th>Mes</th><th>Estado</th><th>Abierto por</th><th>Apertura</th><th>Cerrado por</th><th>Cierre</th><th>Lecturas con foto</th><th>Observación</th><th></th></tr></thead><tbody>` +
+    (S.db.Periodos.length ? S.db.Periodos.map(p => {
+      const meds = S.db.Medidores.filter(m => isActivo(m.activo));
+      const ok = meds.filter(m => { const l = lecturaDe(p.mes, m.medidor); return l && l.lectura !== '' && l.lectura !== undefined && l.fotoId; }).length;
+      return `<tr><td>${mesLargo(p.mes)}</td><td><span class="pill ${p.estado}">${p.estado}</span></td>
+        <td>${esc(p.abiertoPor || '—')}</td><td>${esc(fechaHora(p.fechaApertura))}</td><td>${esc(p.cerradoPor || '—')}</td><td>${esc(fechaHora(p.fechaCierre))}</td>
+        <td>${ok} de ${meds.length}</td><td>${esc(p.observacion || '')}</td>
+        <td>${p.estado === 'ABIERTO' ? `<button class="btn ghost sm" data-cerrar="${p.mes}">Cerrar</button>` : `<button class="btn ghost sm" data-abrir="${p.mes}">Reabrir</button>`}</td></tr>`;
+    }).join('') : '<tr><td class="empty" colspan="9">Aún no se ha abierto ningún mes.</td></tr>') + '</tbody>';
+}
+function fechaHora(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso); if (isNaN(d)) return String(iso);
+  return d.toLocaleDateString(CFG.LOCALE) + ' ' + d.toLocaleTimeString(CFG.LOCALE, { hour: '2-digit', minute: '2-digit' });
+}
+async function cambiarPeriodo(mes, abrir, observacion) {
+  const ab = mesAbiertoActual();
+  const msg = abrir
+    ? `¿Abrir ${mesLargo(mes)} para registrar lecturas?` + (ab && ab !== mes ? `\n\n${mesLargo(ab)} se cerrará automáticamente.` : '')
+    : `¿Cerrar ${mesLargo(mes)}? Nadie podrá registrar ni cambiar lecturas de ese mes hasta que lo vuelvas a abrir.`;
+  if (!confirm(msg)) return;
+  run(async () => { await api(abrir ? 'abrirMes' : 'cerrarMes', { mes, usuario: S.user.usuario, observacion: observacion || '' }); await cargar(); },
+    abrir ? `${mesLargo(mes)} abierto para registrar lecturas` : `${mesLargo(mes)} cerrado`).catch(() => {});
+}
+
+// ===================================================================================
+// MEDIDORES (ADMIN)
+// ===================================================================================
+function renderMedidores() {
+  const meds = S.db.Medidores;
+  const opts = (sel) => `<option value="">— ninguno —</option>` + meds.filter(m => m.categoria === 'PDC').map(m => `<option ${m.medidor === sel ? 'selected' : ''}>${esc(m.medidor)}</option>`).join('');
+  const f = $('#frmMed');
+  const cur = { rel: f.relacionadoA.value, desc: f.descuentaDe.value };
+  f.relacionadoA.innerHTML = opts(cur.rel); f.descuentaDe.innerHTML = opts(cur.desc);
+  $('#dlGrupos').innerHTML = [...new Set(meds.map(m => m.grupo))].map(g => `<option value="${esc(g)}">`).join('');
+  $('#tblMed').innerHTML = `<thead><tr><th class="num">Orden</th><th class="first">Medidor</th><th>Categoría</th><th>Grupo</th><th>Serie / tablero</th><th class="num">Factor</th><th>Descuenta (mes ant.) de</th><th>Descuenta (mismo mes) de</th><th>Estado</th><th></th></tr></thead><tbody>` +
+    meds.map(m => `<tr><td class="num">${esc(m.orden)}</td><td class="first">${esc(m.medidor)}</td><td><span class="pill ${m.categoria}">${esc(m.categoria)}</span></td><td>${esc(m.grupo)}</td><td>${esc(m.serie)}</td>
+      <td class="num">${fN(m.factor, 0)}</td><td>${esc(m.relacionadoA) || '<span class="zero">—</span>'}</td><td>${esc(m.descuentaDe) || '<span class="zero">—</span>'}</td>
+      <td>${isActivo(m.activo) ? '<span class="pill ok">Activo</span>' : '<span class="pill off">Inactivo</span>'}</td>
+      <td><button class="icon-btn" data-medit="${esc(m.medidor)}" title="Editar">✎</button></td></tr>`).join('') + '</tbody>';
+}
+function cargarFormMedidor(m) {
+  const f = $('#frmMed');
+  f.reset();
+  if (m) {
+    f.medidor.value = m.medidor; f.medidor.readOnly = true; f.categoria.value = m.categoria; f.grupo.value = m.grupo; f.serie.value = m.serie || '';
+    f.factor.value = m.factor || 1; f.relacionadoA.value = m.relacionadoA || ''; f.descuentaDe.value = m.descuentaDe || ''; f.orden.value = m.orden || ''; f.activo.checked = isActivo(m.activo);
+    $('#medModo').textContent = '· editando ' + m.medidor;
+  } else {
+    f.medidor.readOnly = false; f.orden.value = S.db.Medidores.length + 1; $('#medModo').textContent = 'nuevo';
+  }
+}
+
+// ===================================================================================
+// USUARIOS (ADMIN)
+// ===================================================================================
+function renderUsuarios() {
+  $('#tblUsr').innerHTML = `<thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Estado</th><th>Creado</th><th></th></tr></thead><tbody>` +
+    S.db.Usuarios.map(u => `<tr><td>${esc(u.usuario)}</td><td>${esc(u.nombre)}</td><td>${ROL_TXT[u.rol] || 'Usuario'}</td>
+      <td>${isActivo(u.activo) ? '<span class="pill ok">Activo</span>' : '<span class="pill off">Inactivo</span>'}</td><td>${esc(String(u.creado || '').slice(0, 10))}</td>
+      <td><button class="btn ghost sm" data-utoggle="${esc(u.usuario)}">${isActivo(u.activo) ? 'Desactivar' : 'Activar'}</button>
+          <button class="btn ghost sm" data-ureset="${esc(u.usuario)}">Restablecer contraseña</button></td></tr>`).join('') + '</tbody>';
+}
+
+// ===================================================================================
+// GRÁFICOS (SVG propio, sin librerías)
+// ===================================================================================
+// Barras horizontales, una serie (identidad por etiqueta; color único).
+function barrasH(el, items, fmt) {
+  if (!items.length) { el.innerHTML = '<div class="empty">Sin datos</div>'; return; }
+  const W = Math.max(320, el.clientWidth || 900), rowH = 30, padL = Math.min(190, W * 0.34), padR = 90, H = items.length * rowH + 8;
+  const max = Math.max(...items.map(i => i.value), 0) || 1;
+  const sc = (v) => Math.max(0, v) / max * (W - padL - padR);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Facturación real por grupo">`;
+  items.forEach((it, i) => {
+    const y = i * rowH + 4, w = sc(it.value);
+    s += `<g class="hit" data-i="${i}">
+      <rect x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent"/>
+      <text x="${padL - 10}" y="${y + rowH / 2 + 4}" text-anchor="end" font-size="12.5" fill="#1c2433">${esc(corta(it.label, Math.floor((padL - 14) / 6.8)))}</text>
+      <path d="${barPath(padL, y + 6, w, rowH - 12, 4)}" fill="var(--series-1)"/>
+      <text x="${padL + w + 8}" y="${y + rowH / 2 + 4}" font-size="12" fill="#6b7486">${esc(fmt(it.value))}</text></g>`;
+  });
+  s += `<line x1="${padL}" x2="${padL}" y1="0" y2="${H}" stroke="#c9d0dc"/></svg>`;
+  el.innerHTML = s;
+  $$('.hit', el).forEach(g => {
+    const it = items[+g.dataset.i];
+    g.addEventListener('mousemove', ev => showTip(`<b>${esc(it.label)}</b><div class="row"><span>Fact. real</span><span>${esc(fmt(it.value))}</span></div>${it.extra ? `<div class="row"><span>Consumo</span><span>${esc(it.extra)}</span></div>` : ''}`, ev));
+    g.addEventListener('mouseleave', hideTip);
+  });
+}
+const corta = (t, n) => t.length > n ? t.slice(0, Math.max(1, n - 1)) + '…' : t;
+// Barra con extremo redondeado (4px) anclada a la base izquierda.
+function barPath(x, y, w, h, r) {
+  if (w <= 0) return '';
+  r = Math.min(r, w, h / 2);
+  return `M${x},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h - r}Q${x + w},${y + h} ${x + w - r},${y + h}H${x}Z`;
+}
+// Columnas verticales, una serie (histórico del recibo a terceros).
+function columnas(el, items, fmt, maxV) {
+  const W = Math.max(300, el.clientWidth || 760), H = 180, padB = 24, padT = 18, n = items.length, gap = 2;
+  const bw = (W - (n - 1) * gap) / n;
+  const max = maxV || Math.max(...items.map(i => i.value), 1);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Consumo últimos 12 meses">`;
+  items.forEach((it, i) => {
+    const x = i * (bw + gap), h = Math.max(0, it.value) / max * (H - padB - padT), y = H - padB - h;
+    const r = Math.min(4, bw / 2, h);
+    s += `<g class="hit" data-i="${i}"><rect x="${x}" y="0" width="${bw}" height="${H}" fill="transparent"/>
+      ${h > 0 ? `<path d="M${x},${H - padB}V${y + r}Q${x},${y} ${x + r},${y}H${x + bw - r}Q${x + bw},${y} ${x + bw},${y + r}V${H - padB}Z" fill="var(--series-1)"/>` : ''}
+      <text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#6b7486">${esc(it.label)}</text></g>`;
+  });
+  const last = items[n - 1];
+  if (last) s += `<text x="${W}" y="${12}" text-anchor="end" font-size="11" fill="#6b7486">Último: ${esc(fmt(last.value))}</text>`;
+  s += `<line x1="0" x2="${W}" y1="${H - padB}" y2="${H - padB}" stroke="#c9d0dc"/></svg>`;
+  el.innerHTML = s;
+  $$('.hit', el).forEach(g => {
+    const it = items[+g.dataset.i];
+    g.addEventListener('mousemove', ev => showTip(`<b>${esc(it.label)}</b><div class="row"><span>Consumo</span><span>${esc(fmt(it.value))}</span></div><div class="row"><span>Importe</span><span>${esc(it.extra)}</span></div>`, ev));
+    g.addEventListener('mouseleave', hideTip);
+  });
+}
+// Líneas (2 series, mismo eje), con leyenda, etiqueta directa al final y crosshair + tooltip.
+function lineas(el, labels, series, fmt, fmtAxis) {
+  if (!labels.length) { el.innerHTML = '<div class="empty">Sin datos</div>'; return; }
+  const W = Math.max(300, el.clientWidth || 640), H = 260, padL = 52, padR = 16, padT = 14, padB = 28;
+  const vals = series.flatMap(s => s.values).filter(v => v !== null && isFinite(v));
+  let min = Math.min(...vals), max = Math.max(...vals);
+  const span = (max - min) || Math.abs(max) || 1;
+  min -= span * 0.1; max += span * 0.1;
+  const allPos = vals.every(v => v >= 0);
+  if ((min > 0 && min < span * 0.6) || (allPos && min < 0)) min = 0;
+  const n = labels.length;
+  const x = (i) => padL + (n === 1 ? (W - padL - padR) / 2 : i / (n - 1) * (W - padL - padR));
+  const y = (v) => padT + (1 - (v - min) / (max - min)) * (H - padT - padB);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img">`;
+  for (let k = 0; k <= 4; k++) {
+    const v = min + (max - min) * k / 4, yy = y(v);
+    s += `<line x1="${padL}" x2="${W - padR}" y1="${yy}" y2="${yy}" stroke="var(--grid)"/><text x="${padL - 8}" y="${yy + 4}" text-anchor="end" font-size="11" fill="#6b7486">${esc(fmtAxis(v))}</text>`;
+  }
+  const step = Math.ceil(n / 8);
+  labels.forEach((l, i) => { if (i % step === 0 || i === n - 1) s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#6b7486">${esc(l)}</text>`; });
+  series.forEach(se => {
+    let d = '', pen = false;
+    se.values.forEach((v, i) => { if (v === null || !isFinite(v)) { pen = false; return; } d += (pen ? 'L' : 'M') + x(i) + ',' + y(v); pen = true; });
+    s += `<path d="${d}" fill="none" stroke="${se.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    se.values.forEach((v, i) => { if (v !== null && isFinite(v)) s += `<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="${se.color}" stroke="#fff" stroke-width="1.5"/>`; });
+  });
+  s += `<line class="xh" x1="0" x2="0" y1="${padT}" y2="${H - padB}" stroke="#9aa3b2" stroke-dasharray="3 3" visibility="hidden"/>`;
+  s += `<rect class="ov" x="${padL}" y="${padT}" width="${W - padL - padR}" height="${H - padT - padB}" fill="transparent"/></svg>`;
+  el.innerHTML = `<div class="legend">${series.map(se => `<span><i style="background:${se.color}"></i>${esc(se.name)}</span>`).join('')}</div>` + s;
+  const svg = $('svg', el), xh = $('.xh', el);
+  $('.ov', el).addEventListener('mousemove', ev => {
+    const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const i = Math.max(0, Math.min(n - 1, Math.round((p.x - padL) / ((W - padL - padR) / Math.max(1, n - 1)))));
+    xh.setAttribute('x1', x(i)); xh.setAttribute('x2', x(i)); xh.setAttribute('visibility', 'visible');
+    showTip(`<b>${esc(labels[i])}</b>` + series.map(se => `<div class="row"><span><span class="sw" style="background:${se.color}"></span>${esc(se.name)}</span><span>${se.values[i] === null ? '—' : esc(fmt(se.values[i]))}</span></div>`).join(''), ev);
+  });
+  $('.ov', el).addEventListener('mouseleave', () => { xh.setAttribute('visibility', 'hidden'); hideTip(); });
+}
+
+// ===================================================================================
+// EVENTOS
+// ===================================================================================
+function irA(view) {
+  const b = $(`#tabs button[data-view="${view}"]`); if (!b) return;
+  $$('#tabs button[data-view]').forEach(x => x.classList.toggle('active', x === b));
+  $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
+  b.closest('.nav-group').classList.add('open');
+  $('#crumb').textContent = b.textContent;
+  $('#mesWrap').hidden = ['lecturas', 'medidores', 'usuarios', 'periodos'].includes(view) || isLector();
+  S.view = view; document.body.classList.remove('side-open'); render();
+}
+$('#tabs').addEventListener('click', e => {
+  const t = e.target.closest('[data-toggle]');
+  if (t) { t.closest('.nav-group').classList.toggle('open'); return; }
+  const b = e.target.closest('button[data-view]'); if (b) irA(b.dataset.view);
+});
+$('#btnSide').addEventListener('click', () => document.body.classList.add('side-open'));
+$('#btnSideClose').addEventListener('click', () => document.body.classList.remove('side-open'));
+$('#scrim').addEventListener('click', () => document.body.classList.remove('side-open'));
+$('#mesSel').addEventListener('change', e => {
+  S.mes = e.target.value;
+  $('#lecMes').value = S.mes; cargarFormRecibo(S.mes); cargarFormPrecio(S.mes);
+  render();
+});
+$('#btnReload').addEventListener('click', () => run(cargar, 'Datos actualizados').catch(() => {}));
+$('#btnLogout').addEventListener('click', async () => { try { await jsonp({ action: 'logout' }, 8000); } catch (e) {} try { sessionStorage.removeItem(SES_KEY); } catch (e) {} location.reload(); });
+
+// Lecturas
+$('#lecMes').addEventListener('change', renderLecturas);
+$('#tblLec').addEventListener('input', e => { const tr = e.target.closest('tr[data-med]'); if (tr) calcFilaLectura(tr); });
+$('#tblLec').addEventListener('click', e => {
+  const b = e.target.closest('[data-subir]');
+  if (b) { filaFoto = b.closest('tr'); const fi = $('#fotoInput'); fi.value = ''; fi.click(); return; }
+  const img = e.target.closest('img.thumb'); if (img && img.src) verFoto(img.src);
+});
+$('#fotoInput').addEventListener('change', e => alElegirFoto(e.target.files[0]));
+$('#reciboOut').addEventListener('click', e => { const img = e.target.closest('img[data-rfoto]'); if (img && img.src) verFoto(img.src); });
+$('#btnSaveLec').addEventListener('click', guardarLecturas);
+
+// Recibos / precio
+$('#frmRec').mes.addEventListener('change', e => cargarFormRecibo(mesKey(e.target.value)));
+$('#frmPre').mes.addEventListener('change', e => cargarFormPrecio(mesKey(e.target.value)));
+$('#frmRec').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target, mes = mesKey(f.mes.value);
+  const updates = { energiaSoles: num(f.energiaSoles.value), energiaKwh: num(f.energiaKwh.value), petroleoSoles: num(f.petroleoSoles.value), petroleoGln: num(f.petroleoGln.value), observacion: f.observacion.value };
+  run(async () => { await api('updateRow', { sheet: 'Recibos', keyField: 'mes', keyValue: mes, updates, upsert: 'true' }); await cargar(); }, 'Recibo de ' + mesLargo(mes) + ' guardado').catch(() => {});
+});
+$('#frmPre').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target, mes = mesKey(f.mes.value);
+  run(async () => { await api('updateRow', { sheet: 'PrecioProyectado', keyField: 'mes', keyValue: mes, updates: { precioKwh: num(f.precioKwh.value), observacion: f.observacion.value }, upsert: 'true' }); await cargar(); }, 'Precio de ' + mesLargo(mes) + ' guardado').catch(() => {});
+});
+$('#btnUsarReal').addEventListener('click', () => {
+  const f = $('#frmPre'), m = mesKey(f.mes.value); if (!m) return;
+  const real = realDelMes(mesAnt(m));
+  if (!real) return toast('No hay recibo del mes anterior', true);
+  f.precioKwh.value = real.toFixed(4); f.observacion.value = 'Real de ' + mesLargo(mesAnt(m));
+});
+$('#tblRec').addEventListener('click', e => {
+  const b = e.target.closest('[data-edit]'); if (!b) return;
+  cargarFormRecibo(b.dataset.edit); cargarFormPrecio(b.dataset.edit); window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// Recibo a terceros
+$('#recGrupo').addEventListener('change', renderReciboTercero);
+$('#btnPrint').addEventListener('click', () => window.print());
+
+// Apertura de mes
+$('#frmPer').addEventListener('submit', e => { e.preventDefault(); cambiarPeriodo(mesKey(e.target.mes.value), true, e.target.observacion.value.trim()); e.target.observacion.value = ''; });
+$('#view-periodos').addEventListener('click', e => {
+  const c = e.target.closest('[data-cerrar]'), a = e.target.closest('[data-abrir]');
+  if (c) cambiarPeriodo(c.dataset.cerrar, false);
+  if (a) cambiarPeriodo(a.dataset.abrir, true);
+});
+
+// Medidores
+$('#btnMedNuevo').addEventListener('click', () => cargarFormMedidor(null));
+$('#tblMed').addEventListener('click', e => {
+  const b = e.target.closest('[data-medit]'); if (!b) return;
+  cargarFormMedidor(S.db.Medidores.find(m => m.medidor === b.dataset.medit)); window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+$('#frmMed').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target, medidor = f.medidor.value.trim();
+  if (f.relacionadoA.value === medidor || f.descuentaDe.value === medidor) return toast('Un medidor no puede descontarse de sí mismo', true);
+  if (!f.medidor.readOnly && S.db.Medidores.some(m => m.medidor.toLowerCase() === medidor.toLowerCase())) return toast('Ya existe un medidor con ese nombre', true);
+  const updates = { categoria: f.categoria.value, grupo: f.grupo.value.trim(), serie: f.serie.value.trim(), factor: num(f.factor.value) || 1, relacionadoA: f.relacionadoA.value, descuentaDe: f.descuentaDe.value, activo: f.activo.checked, orden: num(f.orden.value) };
+  run(async () => { await api('updateRow', { sheet: 'Medidores', keyField: 'medidor', keyValue: medidor, updates, upsert: 'true' }); await cargar(); cargarFormMedidor(null); }, 'Medidor guardado').catch(() => {});
+});
+
+// Usuarios
+$('#frmUsr').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target;
+  const passwordHash = await sha256(f.password.value);
+  run(async () => { await api('createUser', { usuario: f.usuario.value.trim(), nombre: f.nombre.value.trim(), rol: f.rol.value, passwordHash }); f.reset(); await cargar(); }, 'Usuario creado').catch(() => {});
+});
+$('#tblUsr').addEventListener('click', async e => {
+  const t = e.target.closest('[data-utoggle]'), r = e.target.closest('[data-ureset]');
+  if (t) {
+    const u = S.db.Usuarios.find(x => x.usuario === t.dataset.utoggle);
+    if (u.usuario === S.user.usuario) return toast('No puedes desactivar tu propio usuario', true);
+    run(async () => { await api('updateRow', { sheet: 'Usuarios', keyField: 'usuario', keyValue: u.usuario, updates: { activo: !isActivo(u.activo) } }); await cargar(); }, 'Usuario actualizado').catch(() => {});
+  }
+  if (r) {
+    const p = prompt('Nueva contraseña para ' + r.dataset.ureset + ' (mínimo 6 caracteres):');
+    if (!p) return;
+    if (p.length < 6) return toast('La contraseña debe tener al menos 6 caracteres', true);
+    const passwordHash = await sha256(p);
+    run(async () => { await api('updateRow', { sheet: 'Usuarios', keyField: 'usuario', keyValue: r.dataset.ureset, updates: { passwordHash } }); }, 'Contraseña restablecida').catch(() => {});
+  }
+});
+
+let _rz; window.addEventListener('resize', () => { clearTimeout(_rz); _rz = setTimeout(() => { if (['resumen', 'historico'].includes(S.view)) render(); }, 200); });
+
+// Historial: filtros
+$('#hisMetric').addEventListener('change', renderHistorico);
+$('#hisConRecibo').addEventListener('change', renderHistorico);
+
+// ===================================================================================
+// LOGIN E INICIO
+// ===================================================================================
+function aplicarUsuario() {
+  $('#login').hidden = true;
+  $('#whoName').textContent = S.user.nombre;
+  $('#whoRol').textContent = ROL_TXT[S.user.rol] || S.user.rol;
+  $('#avatar').textContent = (S.user.nombre || S.user.usuario || '?').trim().charAt(0).toUpperCase();
+  $$('[data-roles]').forEach(el => el.hidden = !puede(el));
+  document.body.classList.toggle('rol-lector', isLector());
+  irA(isLector() ? 'lecturas' : (S.view && S.view !== 'lecturas' ? S.view : 'resumen'));
+}
+async function iniciar() {
+  try {
+    await run(cargar);
+  } catch (e) {
+    $('#conn').textContent = '● Sin conexión'; $('#conn').className = 'badge err';
+  }
+}
+$('#loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  $('#lgErr').textContent = ''; $('#lgBtn').disabled = true; $('#lgBtn').textContent = 'Verificando…';
+  try {
+    const r = await api('login', { usuario: $('#lgUser').value.trim(), passwordHash: await sha256($('#lgPass').value) });
+    if (!r.sesion || r.version !== API_VERSION_ESPERADA) {
+      throw new Error('La API de Apps Script está desactualizada (no entrega sesión). Pega el Code.gs nuevo y crea una "Nueva versión" de la implementación.');
+    }
+    S.user = { usuario: r.usuario, nombre: r.nombre, rol: normRol(r.rol), sesion: r.sesion };
+    guardarSesion();
+    aplicarUsuario(); iniciar();
+  } catch (err) {
+    $('#lgErr').textContent = err.message;
+  } finally {
+    $('#lgBtn').disabled = false; $('#lgBtn').textContent = 'Ingresar';
+  }
+});
+function guardarSesion() { try { sessionStorage.setItem(SES_KEY, JSON.stringify(S.user)); } catch (e) {} }
+(function () {
+  try { sessionStorage.removeItem('pe_user'); } catch (e) {}   // sesión de la versión anterior
+  try { S.user = JSON.parse(sessionStorage.getItem(SES_KEY) || 'null'); } catch (e) { S.user = null; }
+  if (S.user && !S.user.sesion) S.user = null;
+  if (S.user) S.user.rol = normRol(S.user.rol);
+  if (S.user) { aplicarUsuario(); iniciar(); } else { $('#lgUser').focus(); }
+})();
+</script>
+</body>
+</html>
